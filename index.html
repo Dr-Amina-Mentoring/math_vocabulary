@@ -1,0 +1,1473 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Math Bridge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Zilla+Slab:wght@500;700&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: a teacher's desk — a slim header, tabbed workspaces, and the student's copy drawn on French Seyès paper (grands carreaux) with red-pen corrections. */
+:root {
+  --bg: #eef0f5;
+  --surface: #ffffff;
+  --paper: #fdfdff;
+  --fg: #1c2133;
+  --muted: #5b6278;
+  --line: #d9dce8;
+  --ink: #1f3fa6;          /* stylo bleu de l'élève */
+  --pen: #c41630;          /* stylo rouge du prof */
+  --pen-soft: #fbe9ec;
+  --ok: #1d7a47;
+  --ok-soft: #e4f4ea;
+  --warn: #a35b00;
+  --warn-soft: #fdf1dd;
+  --seyes-fine: rgba(120, 128, 210, .16);
+  --seyes-strong: rgba(110, 118, 205, .38);
+  --margin-red: rgba(214, 40, 70, .55);
+  --chip: #e3e6f0;
+  --accent: #1f3fa6;
+  --accent-fg: #ffffff;
+  --accent-soft: #e9edfb;
+  --on-role: #ffffff;
+  --r-hyp: #2f6fb3; --r-prop: #7a3fb0; --r-calc: #3d7d6a; --r-concl: #b1462d;
+  --f-display: "Zilla Slab", "Rockwell", Georgia, serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-pen: "Kalam", "Comic Sans MS", "Segoe Print", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11141d; --surface: #191d29; --paper: #1b2030; --fg: #e6e8f0; --muted: #a0a6ba; --line: #2d3347;
+  --ink: #93adff; --pen: #ff7387; --pen-soft: #3a1c24; --ok: #6fd39a; --ok-soft: #173326; --warn: #f2b35c; --warn-soft: #3a2c15;
+  --seyes-fine: rgba(150, 160, 255, .07); --seyes-strong: rgba(150, 160, 255, .17); --margin-red: rgba(255, 110, 130, .45);
+  --chip: #262c3d; --accent: #93adff; --accent-fg: #11141d; --accent-soft: #1f2640; --on-role: #11141d;
+  --r-hyp: #7fb1ec; --r-prop: #c39af0; --r-calc: #7fcfb6; --r-concl: #f29b83;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11141d; --surface: #191d29; --paper: #1b2030; --fg: #e6e8f0; --muted: #a0a6ba; --line: #2d3347;
+  --ink: #93adff; --pen: #ff7387; --pen-soft: #3a1c24; --ok: #6fd39a; --ok-soft: #173326; --warn: #f2b35c; --warn-soft: #3a2c15;
+  --seyes-fine: rgba(150, 160, 255, .07); --seyes-strong: rgba(150, 160, 255, .17); --margin-red: rgba(255, 110, 130, .45);
+  --chip: #262c3d; --accent: #93adff; --accent-fg: #11141d; --accent-soft: #1f2640; --on-role: #11141d;
+  --r-hyp: #7fb1ec; --r-prop: #c39af0; --r-calc: #7fcfb6; --r-concl: #f29b83;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; }
+h2 { font-size: 1.35rem; font-weight: 700; }
+h3 { font-size: 1.08rem; font-weight: 700; }
+p { margin: 0; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, textarea:focus-visible, input:focus-visible, label:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* bilingual help */
+.en { display: none; color: var(--muted); font-size: .86em; font-style: italic; }
+.show-en .en { display: block; }
+.show-en span.en.inl { display: inline; }
+.show-en span.en.inl::before { content: " · "; font-style: normal; }
+
+header.top { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: end; justify-content: space-between; margin-bottom: 18px; }
+.brand p { color: var(--muted); margin-top: 4px; }
+.brand .mark { font-family: var(--f-pen); color: var(--pen); font-size: 1.05rem; }
+.langtoggle { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.langtoggle button { border: 0; background: transparent; color: var(--muted); padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: .9rem; }
+.langtoggle button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+
+nav.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+nav.tabs button { border: 0; background: none; padding: 10px 16px 12px; color: var(--muted); font-weight: 700; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; text-align: left; }
+nav.tabs button small { display: block; font-weight: 400; font-size: .78rem; }
+nav.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--pen); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.stack { display: grid; gap: 14px; }
+.lead { color: var(--muted); max-width: 68ch; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 7px 14px; font-size: .9rem; text-align: left; line-height: 1.25; }
+.chip b { display: block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.enonce { border-left: 4px solid var(--accent); padding: 4px 0 4px 14px; }
+.enonce .lbl, .lbl { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+
+/* étiquettes */
+.bank { display: grid; gap: 8px; }
+.tag { display: block; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 9px 12px; font-size: .98rem; line-height: 1.35; transition: transform .12s ease, border-color .12s; }
+.tag:hover { border-color: var(--ink); transform: translateX(2px); }
+.tag[disabled] { opacity: .35; cursor: default; transform: none; border-style: dashed; }
+.tag .en { font-size: .8rem; }
+
+/* Seyès paper */
+.copie {
+  position: relative; border-radius: 4px; border: 1px solid var(--line);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent 62px, var(--margin-red) 62px, var(--margin-red) 64px, transparent 64px),
+    repeating-linear-gradient(0deg, var(--seyes-strong) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(0deg, var(--seyes-fine) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, var(--seyes-strong) 0 1px, transparent 1px 32px);
+  background-position: 0 0, 0 31px, 0 7px, 64px 0;
+  padding: 32px 14px 24px 76px; min-height: 340px;
+}
+.copie .head { font-family: var(--f-pen); color: var(--ink); font-size: 1.05rem; line-height: 32px; margin-bottom: 0; }
+.cl { position: relative; display: flex; gap: 8px; align-items: flex-start; min-height: 32px; padding: 4px 0; }
+.cl .txt { flex: 1; min-width: 0; color: var(--ink); font-size: 1.02rem; line-height: 24px; overflow-wrap: anywhere; }
+.cl .ctrl { display: flex; gap: 2px; flex-shrink: 0; }
+.cl .ctrl button { border: 1px solid var(--line); background: var(--surface); color: var(--muted); width: 28px; height: 28px; border-radius: 5px; font-size: .85rem; line-height: 1; padding: 0; }
+.cl .ctrl button:hover { color: var(--fg); border-color: var(--fg); }
+.cl .badge { position: absolute; left: -70px; top: 6px; width: 58px; text-align: right; font-family: var(--f-pen); font-size: .82rem; line-height: 1.1; }
+.cl.ok .badge { color: var(--ok); }
+.cl.bad .txt { text-decoration: line-through; text-decoration-color: var(--pen); text-decoration-thickness: 2px; }
+.cl.bad .badge, .cl.missing .badge { color: var(--pen); }
+.cl.order .badge { color: var(--warn); }
+.cl.order .txt { background: var(--warn-soft); }
+.pen { font-family: var(--f-pen); color: var(--pen); font-size: 1rem; line-height: 1.3; display: inline-block; width: 100%; margin-top: 2px; text-decoration: none; }
+.pen .en { font-family: var(--f-body); color: var(--pen); opacity: .85; }
+.pen.okc { color: var(--ok); }
+.pen.warnc { color: var(--warn); }
+.cl.missing { border: 2px dashed var(--pen); border-radius: 6px; padding: 4px 8px; margin: 4px 0; background: var(--pen-soft); }
+.cl.missing .txt { color: var(--pen); font-family: var(--f-pen); }
+.empty { color: var(--muted); font-style: italic; line-height: 32px; }
+.role { display: inline-block; font-family: var(--f-body); font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 7px; border-radius: 4px; margin-right: 6px; vertical-align: 2px; color: var(--on-role); }
+.role.hyp { background: var(--r-hyp); } .role.prop { background: var(--r-prop); } .role.calc { background: var(--r-calc); } .role.concl { background: var(--r-concl); }
+:root[data-theme="dark"] .role { color: #11141d; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .role { color: #11141d; } }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 9px 16px; border-radius: 7px; font-weight: 700; font-size: .95rem; }
+.btn:hover { border-color: var(--fg); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.red { background: var(--pen); color: #fff; border-color: var(--pen); }
+.btn[disabled] { opacity: .5; cursor: default; }
+
+.score { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-radius: 8px; background: var(--pen-soft); margin-top: 14px; }
+.score.good { background: var(--ok-soft); }
+.score .big { font-family: var(--f-pen); font-size: 2rem; color: var(--pen); line-height: 1; transform: rotate(-4deg); border: 2px solid currentColor; border-radius: 50%; padding: 10px 12px; }
+.score.good .big { color: var(--ok); }
+.score .msg { flex: 1; min-width: 200px; }
+
+/* méthode */
+.algo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 860px) { .algo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .algo { grid-template-columns: 1fr; } }
+.algo .step { border-top: 4px solid; padding: 12px 12px 10px; background: var(--paper); border-radius: 0 0 8px 8px; display: grid; gap: 6px; align-content: start; }
+.algo .step .n { font-family: var(--f-display); font-size: 1.6rem; line-height: 1; }
+.algo .step .q { font-weight: 700; }
+.algo .step code, .phrase { font-family: var(--f-body); color: var(--ink); background: var(--chip); padding: 1px 6px; border-radius: 4px; font-size: .92rem; }
+.sit { display: grid; gap: 8px; }
+.sit button { text-align: left; border: 1px solid var(--line); background: var(--paper); color: var(--fg); padding: 10px 12px; border-radius: 7px; }
+.sit button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.tpl { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.tpl ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 6px; color: var(--ink); }
+.lex { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.lex th, .lex td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.lex th { font-size: .74rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.lex td:first-child { color: var(--ink); font-weight: 700; }
+.tablewrap { overflow-x: auto; }
+.rule { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; background: var(--pen-soft); }
+.rule .x { font-family: var(--f-pen); color: var(--pen); font-size: 1.4rem; line-height: 1; }
+
+/* détective */
+.dl { cursor: pointer; border-radius: 5px; }
+.dl:hover .txt { background: var(--chip); }
+.dl.suspect .txt { background: var(--warn-soft); box-shadow: inset 3px 0 0 var(--warn); padding-left: 6px; }
+.dl.revealed { cursor: default; }
+.checks { display: grid; gap: 8px; }
+.checks label { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); cursor: pointer; }
+.checks input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
+.checks label.r-hit { border-color: var(--ok); background: var(--ok-soft); }
+.checks label.r-miss { border-color: var(--pen); background: var(--pen-soft); }
+.checks label.r-false { border-color: var(--warn); background: var(--warn-soft); }
+.checks .res { display: block; font-size: .85rem; font-weight: 700; margin-top: 2px; }
+
+/* rédiger */
+.symbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.symbar button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); min-width: 38px; height: 36px; border-radius: 6px; font-size: 1rem; padding: 0 8px; }
+.symbar button.ph { font-size: .82rem; }
+textarea#draft { width: 100%; min-height: 260px; resize: vertical; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 1.05rem/32px var(--f-body);
+  background-color: var(--paper);
+  background-image: linear-gradient(90deg, transparent 46px, var(--margin-red) 46px, var(--margin-red) 48px, transparent 48px), repeating-linear-gradient(0deg, var(--seyes-strong) 0 1px, transparent 1px 32px), repeating-linear-gradient(0deg, var(--seyes-fine) 0 1px, transparent 1px 8px);
+  background-attachment: local; background-position: 0 0, 0 39px, 0 7px;
+  padding: 8px 12px 8px 58px; }
+.rubric { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.rubric li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 10px; border-radius: 6px; background: var(--paper); border: 1px solid var(--line); }
+.rubric .ic { font-weight: 700; width: 18px; flex-shrink: 0; text-align: center; }
+.rubric li.y .ic { color: var(--ok); } .rubric li.n .ic { color: var(--pen); } .rubric li.t { background: var(--pen-soft); border-color: var(--pen); } .rubric li.t .ic { color: var(--pen); }
+.rubric .hint { display: block; font-size: .88rem; color: var(--muted); }
+.ai { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 4px; display: grid; gap: 10px; }
+.ai .status { color: var(--muted); font-style: italic; }
+.ai details { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.ai summary { cursor: pointer; font-weight: 700; }
+.ai pre { white-space: pre-wrap; font-family: var(--f-body); color: var(--ink); margin: 8px 0 0; line-height: 1.6; }
+.think { border-left: 4px solid var(--r-prop); background: var(--paper); padding: 10px 12px; border-radius: 0 8px 8px 0; }
+.small { font-size: .86rem; color: var(--muted); }
+
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 2px; font-size: .86em; line-height: 1.1; }
+.frac > span:first-child { border-bottom: 1.5px solid currentColor; padding: 0 3px; }
+.frac > span:last-child { padding: 0 3px; }
+
+/* pyramide */
+.pyrgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: center; }
+@media (max-width: 760px) { .pyrgrid { grid-template-columns: 1fr; } }
+.pyr { display: grid; gap: 4px; width: 100%; max-width: 440px; margin: 0 auto; }
+.pyr .lv { height: 62px; border: 0; padding: 6px 0 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  background: var(--rc); color: var(--on-role); font: 700 .92rem/1.1 var(--f-body); transition: opacity .15s, transform .15s; }
+.pyr .lv .st { font-family: var(--f-pen); font-weight: 700; font-size: 1rem; line-height: 1; }
+.pyr .lv.part { background: repeating-linear-gradient(135deg, var(--rc) 0 9px, color-mix(in srgb, var(--rc) 35%, var(--paper)) 9px 18px); }
+.pyr .lv.empty { background: repeating-linear-gradient(135deg, var(--pen-soft) 0 9px, color-mix(in srgb, var(--pen) 18%, var(--paper)) 9px 18px); color: var(--pen); }
+.pyr .lv.idle { background: var(--chip); color: var(--muted); }
+.pyr.clickable .lv { cursor: pointer; }
+.pyr.clickable .lv:not(.sel) { opacity: .5; }
+.pyr.clickable .lv:hover { opacity: 1; }
+.pyr .ground { border-top: 3px solid var(--fg); text-align: center; padding-top: 4px; font-family: var(--f-pen); color: var(--muted); font-size: .95rem; }
+.pyr .ground.crack, .pyr .ground .crack { color: var(--pen); }
+.pyr.mini { max-width: 260px; gap: 3px; }
+.pyr.mini .lv { height: 40px; font-size: .74rem; padding-top: 4px; }
+.pyr.mini .lv .st { font-size: .85rem; }
+.pyr.mini .num { display: none; }
+.pyr .lv.part .nm, .pyr .lv.part .st { background: var(--rc); padding: 0 5px; border-radius: 3px; }
+.pyr .lv.empty .nm, .pyr .lv.empty .st { background: var(--pen-soft); padding: 0 5px; border-radius: 3px; }
+.copie.mini { min-height: 0; padding-top: 6px; padding-bottom: 6px; }
+.resrow { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: center; margin-top: 14px; }
+.resrow .score { margin-top: 0; }
+@media (max-width: 560px) { .resrow { grid-template-columns: 1fr; } }
+
+/* organigramme */
+.flow { display: grid; justify-items: center; }
+.fn { width: 100%; max-width: 420px; text-align: center; padding: 12px 16px; background: var(--paper); border: 2px solid var(--line); border-radius: 8px; }
+.fn.start { border-radius: 999px; background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 700; width: auto; padding: 8px 22px; }
+.fn.start .en { color: var(--bg); opacity: .75; }
+.fn.q { border-color: var(--accent); background: var(--accent-soft); position: relative; padding-top: 22px; margin-top: 12px; font-weight: 700; }
+.fn.q .en { font-weight: 400; }
+.fn.q.answered { opacity: .85; }
+.dia { position: absolute; top: -15px; left: 50%; width: 28px; height: 28px; margin-left: -14px; transform: rotate(45deg); background: var(--accent); border-radius: 3px; display: grid; place-items: center; }
+.dia b { transform: rotate(-45deg); color: var(--accent-fg); font-family: var(--f-display); }
+.fn.info { border-style: dashed; border-color: var(--r-calc); font-size: .95rem; }
+.fn.res { background: var(--r-prop); border-color: var(--r-prop); color: var(--on-role); font: 700 1.15rem/1.2 var(--f-display); border-radius: 14px; }
+.yn { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+.yn button { border: 2px solid var(--accent); background: var(--surface); color: var(--accent); font-weight: 700; padding: 6px 22px; border-radius: 6px; }
+.yn button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.answered .yn button[aria-pressed="false"] { opacity: .4; }
+.arr { position: relative; width: 2px; height: 34px; background: var(--muted); }
+.arr::after { content: ""; position: absolute; bottom: -1px; left: -5px; border: 6px solid transparent; border-top: 8px solid var(--muted); border-bottom: 0; }
+.arr span { position: absolute; left: 10px; top: 6px; font-family: var(--f-pen); color: var(--accent); font-weight: 700; white-space: nowrap; }
+.tpl.placeholder { border-style: dashed; }
+
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.langtoggle .langbtn { display: inline-block; text-decoration: none; color: var(--muted); padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: .9rem; }
+.langtoggle .langbtn[aria-current="true"] { background: var(--accent); color: var(--accent-fg); }
+/* vocabulaire */
+.vhead { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; justify-content: center; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.vstats { max-width: 460px; min-width: 0; }
+.vxp { font-family: var(--f-display); font-size: 1.5rem; color: var(--warn); font-weight: 700; }
+.vchain { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.vchain .vc { background: var(--rc); color: var(--on-role); font-weight: 700; font-size: .8rem; padding: 3px 9px; border-radius: 6px; }
+.vchain .va { font-family: var(--f-pen); color: var(--fg); font-weight: 700; }
+.vpath { display: grid; justify-items: center; gap: 16px; padding: 22px 0 18px; }
+.vunit { width: 100%; max-width: 480px; background: var(--rc); color: var(--on-role); border-radius: 14px; padding: 12px 18px; margin-top: 8px; }
+.vstep { display: grid; justify-items: center; gap: 6px; transform: translateX(var(--x)); }
+@media (max-width: 460px) { .vstep { transform: translateX(calc(var(--x) / 2)); } }
+.vnode { width: 70px; height: 70px; border-radius: 50%; border: 0; background: var(--rc); color: var(--on-role); font: 700 1.5rem/1 var(--f-display); box-shadow: 0 6px 0 color-mix(in srgb, var(--rc) 55%, #000); position: relative; display: grid; place-items: center; transition: transform .1s, box-shadow .1s; }
+.vnode:active:not([disabled]) { transform: translateY(4px); box-shadow: 0 2px 0 color-mix(in srgb, var(--rc) 55%, #000); }
+.vnode.locked { background: var(--chip); color: var(--muted); box-shadow: 0 6px 0 var(--line); cursor: default; }
+.vnode.current::after, .vbridge.current::after { content: ""; position: absolute; inset: -9px; border-radius: inherit; border: 3px solid var(--rc); animation: vpulse 1.6s ease-out infinite; }
+@keyframes vpulse { from { opacity: 1; transform: scale(.95); } to { opacity: 0; transform: scale(1.15); } }
+.vlbl { font-size: .85rem; font-weight: 700; color: var(--muted); text-align: center; display: grid; gap: 4px; justify-items: center; }
+.vgo { background: var(--fg); color: var(--bg); padding: 3px 10px; border-radius: 6px; font-size: .78rem; }
+.vbridge { position: relative; display: grid; justify-items: center; gap: 2px; min-width: 190px; padding: 10px 22px; border-radius: 999px; border: 3px dashed var(--rc); background: var(--surface); color: var(--fg); }
+.vbridge .vbw { font-family: var(--f-pen); font-size: 1.35rem; font-weight: 700; color: var(--rc); line-height: 1.1; }
+.vbridge.done { border-style: solid; }
+.vbridge[disabled] { opacity: .55; cursor: default; }
+.vles { max-width: 640px; margin: 0 auto; display: grid; gap: 20px; }
+.vbar { display: flex; align-items: center; gap: 12px; }
+.vx { border: 0; background: none; color: var(--muted); font-size: 1.3rem; padding: 4px 8px; }
+.vprog { flex: 1; height: 16px; border-radius: 999px; background: var(--chip); overflow: hidden; }
+.vprog i { display: block; height: 100%; background: var(--ok); border-radius: 999px; transition: width .35s ease; }
+.vhearts { color: var(--pen); font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+.vq { display: grid; gap: 14px; min-height: 300px; align-content: start; }
+.vq h3 { font-size: 1.3rem; }
+.vnew { justify-self: start; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--r-prop); background: color-mix(in srgb, var(--r-prop) 14%, transparent); padding: 3px 10px; border-radius: 999px; }
+.vbigrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.vbig { font: 700 1.7rem/1.2 var(--f-display); color: var(--ink); }
+.vsay { border: 0; background: var(--accent-soft); color: var(--accent); border-radius: 12px; width: 44px; height: 44px; display: inline-grid; place-items: center; flex-shrink: 0; }
+.vopts { display: grid; gap: 10px; }
+.vopt { text-align: left; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 13px 16px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 12px; background: var(--surface); color: var(--fg); font-size: 1.05rem; }
+.vopt .en { flex-basis: 100%; }
+.vopt:hover { background: var(--paper); }
+.vopt > span:not(.vkey):not(.small):not(.role) { flex: 1 1 0; min-width: 0; }
+.dp { display: inline-block; padding-top: 6px; white-space: pre-wrap; }
+.vkey { display: inline-grid; place-items: center; min-width: 26px; height: 26px; border: 2px solid var(--line); border-radius: 7px; font-size: .8rem; color: var(--muted); }
+.vopt.sel, .vtile.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.vopt.good { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+.vopt.bad { border-color: var(--pen); background: var(--pen-soft); color: var(--pen); }
+.vopt.gone, .vtile.gone { opacity: .25; pointer-events: none; }
+.shake { animation: vshake .4s; }
+@keyframes vshake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.vmatch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.vtiles { display: flex; flex-wrap: wrap; gap: 8px; }
+.vtile { padding: 8px 14px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 10px; background: var(--surface); color: var(--fg); font-size: 1.05rem; }
+.vline { min-height: 58px; padding: 8px 0; border-bottom: 2px solid var(--line); border-top: 2px solid var(--line); }
+.vorder { display: grid; gap: 8px; align-content: start; }
+.vsent { font-size: 1.25rem; line-height: 2; color: var(--ink); }
+.vgap { display: inline-block; min-width: 120px; border-bottom: 3px solid var(--accent); text-align: center; padding: 0 6px; margin: 0 4px; color: var(--accent); font-weight: 700; line-height: 1.4; }
+.vwords { display: grid; gap: 8px; }
+.vword { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 2px solid var(--line); border-radius: 12px; background: var(--paper); }
+.vword b { font-size: 1.1rem; color: var(--ink); }
+.vclimb { display: grid; justify-items: center; gap: 4px; }
+.vlev { background: var(--rc); color: var(--on-role); font-weight: 700; padding: 10px 18px; border-radius: 10px; min-width: 220px; text-align: center; }
+.vlink { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 4px 0; }
+.vlink > span:first-child { font-size: 1.3rem; color: var(--muted); }
+.vlink b { font-family: var(--f-pen); font-size: 1.4rem; color: var(--pen); }
+.vmark { background: var(--warn-soft); color: var(--pen); font-weight: 700; padding: 0 4px; border-radius: 4px; }
+.vfoot { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 14px 16px; border-radius: 14px; border-top: 2px solid var(--line); }
+.vfoot.good { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.vfoot.bad { background: var(--pen-soft); color: var(--pen); border-color: transparent; }
+#vfb { flex: 1; min-width: 200px; }
+.vfbt { font-family: var(--f-display); font-size: 1.3rem; }
+.vbtn { margin-left: auto; padding: 12px 30px; border-radius: 12px; border: 0; font-weight: 700; font-size: 1.05rem; background: var(--ok); color: var(--on-role); box-shadow: 0 4px 0 color-mix(in srgb, var(--ok) 55%, #000); }
+.vbtn.red { background: var(--pen); box-shadow: 0 4px 0 color-mix(in srgb, var(--pen) 55%, #000); }
+.vbtn[disabled] { background: var(--chip); color: var(--muted); box-shadow: 0 4px 0 var(--line); cursor: default; }
+.vend { text-align: center; justify-items: center; padding: 20px 0; }
+.vstamp { font-family: var(--f-pen); font-size: 2.2rem; color: var(--ok); transform: rotate(-3deg); border: 3px solid currentColor; border-radius: 14px; padding: 6px 20px; }
+.vendstats { display: flex; gap: 14px; }
+.vendstats div { border: 2px solid var(--line); border-radius: 12px; padding: 10px 18px; display: grid; }
+.vendstats b { font: 700 1.6rem/1 var(--f-display); color: var(--warn); }
+@media (prefers-reduced-motion: reduce) { .vnode.current::after, .vbridge.current::after, .shake { animation: none; } }
+</style>
+<style>
+.wrap { max-width: 880px; }
+.vfr { font-style: italic; opacity: .9; }
+.tagEN, .tagFR { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .06em; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; font-style: normal; }
+.tagEN { background: var(--accent-soft); color: var(--accent); }
+.tagFR { background: var(--pen-soft); color: var(--pen); }
+.vcard { border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--paper); }
+.vcard b { color: var(--ink); }
+.mtop { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.mtop h1 { font-size: clamp(1.6rem, 4vw, 2.1rem); }
+.mtop h1 span { color: var(--pen); }
+.mnav { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+.mnav button { border: 0; background: none; color: var(--muted); font-weight: 700; padding: 7px 14px; border-radius: 999px; font-size: .92rem; }
+.mnav button[aria-current="true"] { background: var(--accent); color: var(--accent-fg); }
+.mstats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.mstat { background: var(--paper); border: 2px solid var(--line); border-radius: 14px; padding: 12px; display: grid; justify-items: center; gap: 2px; text-align: center; }
+.mstat b { font: 700 1.6rem/1 var(--f-display); }
+.mstat span { font-size: .82rem; color: var(--muted); }
+.mstat.streak svg { color: var(--muted); }
+.mstat.streak.lit svg, .mstat.streak.lit b { color: #e8770c; }
+.ring { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--ok) calc(var(--p) * 1%), var(--chip) 0); }
+.ring span { background: var(--paper); width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-size: .78rem; font-weight: 700; color: var(--fg); }
+.msec { margin: 22px 0 10px; font-size: 1.25rem; }
+.mcourses { display: grid; gap: 12px; }
+.mcourse { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; align-items: center; text-align: left; border: 2px solid var(--line); border-bottom-width: 5px; border-radius: 16px; padding: 14px 16px; background: var(--surface); color: var(--fg); }
+.mcourse:hover { border-color: var(--rc); }
+.mnum { grid-row: span 3; width: 52px; height: 52px; border-radius: 14px; background: var(--rc); color: var(--on-role); font: 700 1.5rem/52px var(--f-display); text-align: center; }
+.mct { display: grid; gap: 2px; }
+.mct b { font-size: 1.1rem; }
+.mbar { height: 10px; border-radius: 999px; background: var(--chip); overflow: hidden; }
+.mbar i { display: block; height: 100%; background: var(--rc); border-radius: 999px; }
+.mtools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 520px) { .mtools { grid-template-columns: 1fr; } .mstats { gap: 6px; } .mstat { padding: 10px 6px; } }
+.mtool { text-align: left; display: grid; gap: 3px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 14px; padding: 12px 14px; background: var(--surface); color: var(--fg); }
+.mtool:hover { border-color: var(--accent); }
+.mfoot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--line); }
+.mfoot label { display: flex; gap: 6px; align-items: center; }
+.mback { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.vbig.long { font-size: 1.2rem; line-height: 1.4; }
+.vtap { display: flex; flex-wrap: wrap; gap: 8px; font-size: 1.1rem; }
+.vtile.good { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+.vtile.bad { border-color: var(--pen); background: var(--pen-soft); color: var(--pen); }
+.vexp { margin-top: 4px; font-size: .92rem; color: var(--fg); opacity: .9; }
+.vtab { display: grid; grid-template-columns: 60px repeat(3, 1fr); border: 2px solid var(--fg); border-radius: 6px; overflow: hidden; text-align: center; max-width: 360px; margin: 6px 0 10px; }
+.vtab > div { padding: 6px; border-bottom: 1px solid var(--line); }
+.vtab > div:nth-child(4n+1) { border-right: 2px solid var(--fg); font-weight: 700; }
+.vtab .hi { align-self: start; } .vtab .lo { padding-top: 26px; }
+.vtab .lo span { display: block; color: var(--muted); font-size: .8rem; }
+.dtext { width: 100%; min-height: 90px; border: 2px solid var(--line); border-radius: 12px; padding: 12px; font: 1.05rem/1.5 var(--f-body); color: var(--ink); background: var(--paper); resize: vertical; }
+.dpres { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+.dpres .vtile { font-size: .82rem; padding: 5px 10px; }
+.dout { font-size: 1.15rem; line-height: 1; padding: 16px; background: var(--paper); border: 2px dashed var(--line); border-radius: 12px; margin-bottom: 14px; overflow-wrap: anywhere; }
+.dg { display: inline-flex; flex-direction: column; align-items: center; vertical-align: top; margin: 4px 2px 10px; padding: 3px 6px; border-radius: 8px; background: var(--accent-soft); cursor: pointer; }
+.dg .dfr { color: var(--ink); font-weight: 700; line-height: 1.3; }
+.dg .den { font-size: .7rem; color: var(--accent); line-height: 1.2; margin-top: 2px; max-width: 160px; text-align: center; }
+.dg.sm { background: transparent; padding: 3px 1px; }
+.dg.sm .dfr { font-weight: 400; color: var(--muted); }
+.dg.sm .den { color: var(--muted); }
+.gsearch { width: 100%; padding: 10px 14px; border: 2px solid var(--line); border-radius: 12px; font: inherit; background: var(--paper); color: var(--fg); margin-bottom: 12px; }
+.gsec { margin-bottom: 16px; }
+.gsec h3 { margin-bottom: 6px; }
+.gtable { display: grid; gap: 4px; }
+.grow { display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; padding: 4px 8px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
+.grow b { color: var(--ink); }
+.grow span { color: var(--muted); font-size: .92rem; }
+@media (max-width: 520px) { .grow { grid-template-columns: 44px minmax(0, 1fr); } .grow span { grid-column: 2; } }
+
+.mlist { display: grid; gap: 8px; margin: 6px 0; }
+.mrow { border: 2px solid var(--line); border-radius: 12px; padding: 10px 14px; background: var(--surface); display: grid; gap: 4px; }
+.mfr { font-size: 1.08rem; color: var(--ink); font-weight: 600; line-height: 1.6; }
+.men { font-size: .92rem; color: var(--muted); }
+.gl { position: relative; border-bottom: 1.5px dotted color-mix(in srgb, var(--accent) 70%, transparent); cursor: help; }
+.gl.sm { border-bottom: 0; }
+.gl:hover::after, .gl:focus::after { white-space: pre-line !important; content: attr(data-en); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); width: max-content; max-width: 220px; white-space: normal; background: var(--fg); color: var(--bg); font: 600 .78rem/1.3 var(--f-body); font-style: normal; padding: 5px 9px; border-radius: 7px; z-index: 30; pointer-events: none; text-align: center; text-transform: none; letter-spacing: 0; }
+.gl:focus { outline: none; }
+.wprompt { font-size: 1.15rem; padding: 12px 14px; border-radius: 12px; background: var(--paper); border: 2px solid var(--line); line-height: 1.6; }
+.wparts { display: grid; gap: 10px; }
+.wpart { display: grid; gap: 6px; padding: 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); }
+.wpart .role { justify-self: start; }
+.wlab { font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.wpart textarea { width: 100%; border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; font: 1.1rem/1.4 var(--f-body); color: var(--ink); background: var(--paper); resize: vertical; min-height: 46px; }
+.wpart textarea:focus { border-color: var(--accent); outline: none; }
+.wpart.w-ok { border-color: var(--ok); } .wpart.w-close { border-color: var(--warn); } .wpart.w-miss { border-color: var(--pen); }
+.wres { display: grid; gap: 4px; font-size: .95rem; }
+.wres:empty { display: none; }
+.wok { color: var(--ok); font-weight: 700; } .wclose { color: var(--warn); font-weight: 700; } .wmiss { color: var(--pen); font-weight: 700; }
+.wmodel { color: var(--ink); font-size: 1.02rem; line-height: 1.6; }
+.wmodel mark { background: var(--warn-soft); color: var(--pen); font-weight: 700; padding: 0 3px; border-radius: 4px; }
+.wkeys { display: flex; flex-wrap: wrap; gap: 6px; }
+.wkeys .wsym { min-width: 40px; padding: 6px 8px; text-align: center; }
+.wkeys .wh { border-color: var(--accent); color: var(--accent); }
+.vx[disabled] { opacity: .3; cursor: default; }
+.acourse { margin-bottom: 18px; }
+.aunit { margin: 8px 0 12px; display: grid; gap: 6px; }
+.alesson { border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+.alesson summary { display: flex; gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; font-weight: 700; }
+.alesson summary span:first-child { flex: 1; }
+.astart { padding: 4px 12px; font-size: .85rem; }
+.alist { display: grid; gap: 6px; padding: 0 12px 12px; }
+.aq { border-top: 1px dashed var(--line); padding-top: 6px; display: grid; gap: 2px; line-height: 1.6; }
+.aq.info { display: block; color: var(--muted); font-size: .9rem; }
+.awords { margin: 4px 0 0; padding-left: 18px; columns: 2 220px; }
+.awords b { color: var(--ink); }
+.atype { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.aask { color: var(--fg); }
+.aans { color: var(--ok); font-weight: 600; }
+.aans ol { margin: 2px 0 0; padding-left: 20px; font-weight: 400; color: var(--ink); }
+.agap { display: inline-block; min-width: 40px; border-bottom: 2px solid var(--accent); color: transparent; margin: 0 3px; }
+@media (max-width: 560px) { .mnav { flex-wrap: wrap; border-radius: 14px; } .mnav button { padding: 6px 10px; } }
+
+.mtrack { margin-top: 20px; border-radius: 18px; padding: 16px; display: grid; gap: 12px; }
+.mtrack.main { background: color-mix(in srgb, var(--r-calc) 9%, transparent); border: 2px solid color-mix(in srgb, var(--r-calc) 40%, transparent); }
+.mtrack.bonus { border: 2px dashed var(--line); }
+.mtrack.bonus .mcourse { opacity: .85; }
+.mtrackhead h2 { font-size: 1.35rem; margin-top: 4px; }
+.mtag { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; background: var(--r-calc); color: var(--on-role); }
+.mtrack.bonus .mtag, .mtag.b { background: var(--chip); color: var(--muted); }
+.mnum { font-size: 1.3rem; }
+.atrack { margin: 18px 0 8px; padding: 6px 12px; border-radius: 10px; background: color-mix(in srgb, var(--r-calc) 12%, transparent); }
+.atrack.b { background: var(--chip); }
+
+.vles { position: relative; }
+.exhint { justify-self: end; margin-bottom: -10px; position: relative; border: 2px solid var(--warn); background: var(--warn-soft); color: var(--warn); font-weight: 700; font-size: .82rem; padding: 4px 12px; border-radius: 999px; cursor: help; z-index: 5; }
+.exhint::before { content: "?"; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: 6px; border-radius: 50%; background: var(--warn); color: var(--surface); font-size: .7rem; }
+.exbox { display: none; position: absolute; right: 0; top: calc(100% + 6px); width: min(320px, 80vw); text-align: left; background: var(--surface); color: var(--fg); border: 2px solid var(--warn); border-radius: 12px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.15); font-weight: 400; font-size: .95rem; line-height: 1.45; cursor: default; }
+.exbox b, .exbox i { display: block; } .exbox > b { color: var(--ink); margin-top: 4px; } .exbox i { color: var(--muted); }
+.exhint:hover .exbox, .exhint:focus .exbox, .exhint.open .exbox { display: block; }
+.wex { display: block; margin-top: 4px; font-size: .9rem; color: var(--muted); }
+.wexfr { color: var(--ink); font-style: italic; }
+</style>
+
+<div class="wrap">
+  <header class="mtop">
+    <div class="brand"><h1>Math <span>Bridge</span></h1><p class="small">French maths, explained in English. Read the question, write the answer, reason step by step.</p></div>
+    <nav class="mnav" aria-label="Sections"><button data-v="home" aria-current="true">Learn</button><button data-v="decoder">Decoder</button><button data-v="glossary">Glossary</button><button data-v="all">All questions</button></nav>
+  </header>
+  <main class="panel" id="stage"></main>
+</div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("mathbridge:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("mathbridge:" + k, JSON.stringify(v)); } catch (e) {} }
+};
+const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+const pick = (arr, n) => shuffle(arr).slice(0, n);
+const LV = {
+  hyp:   { n: 1, en: "I know", fr: "Je sais" },
+  prop:  { n: 2, en: "I use a rule", fr: "J'utilise" },
+  calc:  { n: 3, en: "I calculate", fr: "Je calcule" },
+  concl: { n: 4, en: "I conclude", fr: "Je conclus" },
+};
+const lvLabel = r => `${LV[r].n}. ${LV[r].en}`;
+const PYR = ["concl", "calc", "prop", "hyp"], HW = [11, 21, 31, 40.5, 50];
+function pyramidHTML(status, opts = {}) {
+  const tag = opts.click ? "button" : "div";
+  return `<div class="pyr${opts.mini ? " mini" : ""}${opts.click ? " clickable" : ""}">` + PYR.map((r, i) => {
+    const a = HW[i], b = HW[i + 1], clip = `polygon(${50 - a}% 0, ${50 + a}% 0, ${50 + b}% 100%, ${50 - b}% 100%)`;
+    let cls = "full", note = "";
+    if (status) { const [h, t] = status[r] || [0, 0]; cls = h >= t ? "full" : h > 0 ? "part" : "empty"; note = h >= t ? "✓" : `${h}/${t}`; }
+    return `<${tag} class="lv ${cls}${opts.sel === r ? " sel" : ""}" data-r="${r}" style="--rc:var(--r-${r});clip-path:${clip}"><span class="nm">${opts.mini ? LV[r].en : lvLabel(r)}</span>${note ? `<span class="st">${note}</span>` : ""}</${tag}>`;
+  }).join("") + `<div class="ground">${opts.foot || ""}</div></div>`;
+}
+const roleTag = r => `<span class="role ${r}">${LV[r].en}</span>`;
+/* =================== CONTENT =================== */
+/* helpers to author questions. Each returns a plain object (serialisable for the mistakes review). */
+const Q = {
+  info: (title, html, badge) => ({ type: "info", title, html, badge }),
+  words: (title, words, intro, badge) => ({ type: "words", title, words, intro, badge }),
+  mcq: (prompt, big, answer, wrongs, o = {}) => ({ type: "mcq", prompt, big, options: shuffle([answer, ...wrongs]), answer, explain: o.explain || "", speak: o.speak || "", speakAnswer: !!o.speakAnswer }),
+  blank: (before, answer, after, en, wrongs, explain) => ({ type: "blank", before, after, en, options: shuffle([answer, ...wrongs]), answer, explain: explain || "" }),
+  build: (en, tokens, extra) => ({ type: "build", en, answer: tokens, tiles: shuffle([...tokens, ...extra]) }),
+  tap: (prompt, tokens, answer, en, explain) => ({ type: "tap", prompt, tokens, answer, en: en || "", explain: explain || "" }),
+  order: (items, prompt) => ({ type: "order", prompt: prompt || "Put the proof in order", items, tiles: shuffle(items.map((x, k) => k)) }),
+  level: (phrase, sub, answer, lang) => ({ type: "level", phrase, sub: sub || "", answer, lang: lang || "fr-FR" }),
+  match: words => ({ type: "match", pairs: words.map(w => [w[0], w[1]]) }),
+};
+let ALLWORDS = []; // filled after courses are defined (for distractors)
+function wordDrills(words) {
+  const qs = [];
+  const pool = () => ALLWORDS.length ? ALLWORDS : words;
+  words.forEach((w, i) => {
+    if (i % 2 === 0) qs.push(Q.mcq("What does this mean?", w[0], w[1], pick(pool().filter(x => x[1] !== w[1]), 3).map(x => x[1]), { speak: w[0] }));
+    else qs.push(Q.mcq("How do you say this in French?", w[1], w[0], pick(pool().filter(x => x[0] !== w[0]), 3).map(x => x[0]), { speakAnswer: true }));
+  });
+  qs.push(Q.match(pick(words, Math.min(6, words.length))));
+  return qs;
+}
+const wordsLesson = (title, words, intro) => () => [Q.words(title, words, intro, "New words"), ...wordDrills(words)];
+
+/* ---------- COURSE A: READ THE QUESTION ---------- */
+const VERBS1 = [["Calculer", "Calculate / find (a number)"], ["Démontrer que…", "Prove that… (show why it is true)"], ["Justifier", "Explain why (give the rule)"], ["En déduire…", "Use the previous answer to get…"], ["Résoudre", "Solve (find all the x)"], ["Déterminer", "Find / work out"]];
+const VERBS2 = [["Compléter", "Fill in"], ["Représenter / Tracer", "Draw (a graph or a line)"], ["Dresser le tableau", "Make (draw) the table"], ["Comparer", "Compare (which one is bigger?)"], ["Identifier", "Recognise / match"], ["Donner sans justifier", "Just give the answer, no explanation"]];
+const PREC = [["au degré près", "to the nearest degree (37°)"], ["au dixième près", "to 1 decimal place (6,9)"], ["au centième près", "to 2 decimal places (1,41)"], ["la valeur exacte", "the exact value (√2, 3/4…)"], ["une valeur approchée", "an approximate value (≈)"], ["4,5", "4.5 (French uses a comma for decimals)"]];
+const SMALL1 = [["Est-il … ?", "Is it …? (say yes or no, then explain)"], ["Pour quelles valeurs de x … ?", "For which values of x …?"], ["Combien de … ?", "How many …?"], ["Sur quel(s) intervalle(s) … ?", "On which interval(s) …?"], ["s'ils existent", "if there are any"]];
+const SMALL2 = [["tel que", "such that"], ["On admet que", "Accept that … (no need to prove it)"], ["Pour tout x de [−4 ; 1]", "For every x in [−4 ; 1]"], ["à l'aide du graphique", "using the graph"], ["Les affirmations suivantes sont-elles vraies ?", "Are the following statements true?"]];
+const GEO = [["un point de [AE]", "a point on segment [AE]"], ["la droite (AB)", "line AB (it goes on forever)"], ["le segment [AB]", "segment AB (from A to B)"], ["perpendiculaire à (AB)", "perpendicular to line AB (at 90°)"], ["passant par C", "going through C"], ["coupe … en H", "crosses … at point H"], ["parallèle à", "parallel to"], ["rectangle en C", "right-angled at C"], ["l'aire", "the area"], ["une hauteur", "a height"]];
+const FUN1 = [["la fonction f définie sur [−4 ; 4]", "function f, used for x from −4 to 4"], ["l'image de 6 par f", "the output for x = 6, written f(6)"], ["un antécédent de 7", "an input x such that f(x) = 7"], ["la courbe représentative", "the graph (curve) of the function"], ["le tableau de valeurs", "the table of values (x and f(x))"], ["le repère", "the axes (the grid)"]];
+const FUN2 = [["le tableau de variation", "table showing where f goes up or down"], ["le tableau de signes", "table showing where f(x) is + or −"], ["croissante", "increasing (going up)"], ["décroissante", "decreasing (going down)"], ["l'équation f(x) = 0", "the equation f(x) = 0"], ["l'inéquation f(x) ≥ 7", "the inequality f(x) ≥ 7"]];
+
+const COURSE_A = { id: "read", track: "main", title: "Read the question", fr: "Lire l'énoncé", color: "var(--r-hyp)", blurb: "Understand the instructions on a French maths test.",
+  units: [
+    { title: "Action verbs", fr: "Les verbes de consigne", sub: "The first word of a question tells you the job.", lessons: [
+      { id: "v1", t: "Verbs 1", glyph: "1", gen: wordsLesson("Action verbs", VERBS1, "These verbs start most questions. They tell you WHAT to do.") },
+      { id: "v2", t: "Verbs 2", glyph: "2", gen: wordsLesson("More action verbs", VERBS2, "More verbs from your tests.") },
+      { id: "v3", t: "Spot the job", glyph: "★", gen: () => [
+        Q.info("Spot the job", "<p>In a French question, look for the <b>action verb</b> first. It tells you what kind of answer to write.</p><p class='small'>Démontrer → a proof · Calculer → a number · Justifier → a reason · Dresser → a table</p>", "Strategy"),
+        Q.tap("Tap the words that tell you WHAT TO DO.", ["Calculer", "l'image", "de −1", "par la fonction f."], [0], "Calculate the image of −1 under the function f."),
+        Q.tap("Tap the words that tell you WHAT TO DO.", ["À l'aide du graphique,", "résoudre", "l'inéquation", "f(x) ≥ 7."], [1], "Using the graph, solve the inequality f(x) ≥ 7."),
+        Q.tap("Tap the words that tell you WHAT TO DO.", ["b)", "En déduire", "le tableau de signes", "de f(x)."], [1], "Use your answer to a) to make the sign table of f(x).", "\"En déduire\" means: use your answer to a) to do this."),
+        Q.tap("Tap the words that tell you WHAT TO DO.", ["Dresser", "le tableau de variation", "de f."], [0], "Make the variation table of f."),
+        Q.mcq("What does this question ask you to do?", "La fonction f est-elle croissante sur [0 ; 4] ? Justifier.", "Say yes or no, and explain why", ["Draw the function f", "Calculate f(4)", "Just answer yes or no"]),
+        Q.mcq("What does this question ask you to do?", "Donner sans justifier le tableau de variations de f.", "Just write the table, no explanation needed", ["Explain why f is increasing", "Calculate f(0)", "Draw the curve of f"]),
+        Q.mcq("What does this question ask you to do?", "Représenter la courbe de f dans le repère ci-contre.", "Draw the graph of f on the axes shown", ["Calculate f(0)", "Copy the table", "Describe the curve in words"]),
+      ] },
+    ] },
+    { title: "Precision and rounding", fr: "Arrondis et précision", sub: "How precise must your number be?", lessons: [
+      { id: "p1", t: "Rounding words", glyph: "1", gen: wordsLesson("Rounding words", PREC, "Many questions say how to round. Read the end of the question carefully!") },
+      { id: "p2", t: "Round it right", glyph: "★", gen: () => [
+        Q.mcq("\"Donner une valeur approchée au dixième de √7.\" Your calculator shows 2.64575131. What do you write?", "", "√7 ≈ 2,6", ["√7 = 2,64575131", "√7 ≈ 3", "√7 ≈ 2,65"], { explain: "Dixième = 1 decimal place. In French: a comma, and ≈ because it's rounded." }),
+        Q.mcq("x² = 2. \"Donner la valeur exacte de x₂.\" Which answer?", "", "x₂ = √2", ["x₂ ≈ 1,41", "x₂ = 1,4", "x₂ = 1,414"], { explain: "Exact value = no rounding at all: √2." }),
+        Q.mcq("Then: \"…puis la valeur approchée au centième.\"", "", "x₂ ≈ 1,41", ["x₂ ≈ 1,4", "x₂ = √2", "x₂ ≈ 1,414"], { explain: "Centième = 2 decimal places." }),
+        Q.blank("√7 ≈ 2,6 (arrondi au ", "dixième", " près)", "√7 ≈ 2.6 (rounded to 1 decimal place)", ["centième", "degré"]),
+        Q.mcq("In French, what is \"2,5\"?", "2,5", "two and a half", ["two and five", "twenty-five", "two times five"], { speak: "deux virgule cinq" }),
+      ] },
+    ] },
+    { title: "Question words", fr: "Les petits mots des questions", sub: "Small words that change the whole question.", lessons: [
+      { id: "s1", t: "Question words", glyph: "1", gen: wordsLesson("Question words", SMALL1, "These words tell you what kind of answer is expected.") },
+      { id: "s2", t: "Small but important", glyph: "2", gen: wordsLesson("Small but important", SMALL2, "These short phrases are easy to miss. They matter!") },
+      { id: "s3", t: "Decode it", glyph: "★", gen: () => [
+        Q.mcq("What does it mean?", "On admet que f est croissante sur [0 ; 4].", "You can use \"f is increasing on [0 ; 4]\" without proving it", ["You must prove that f is increasing", "f is decreasing on [0 ; 4]", "Draw f on [0 ; 4]"]),
+        Q.mcq("What does it mean?", "Soit x un réel tel que f(x) = 7.", "Let x be a number such that f(x) = 7", ["x = 7", "f(7) = x", "Calculate f(7)"]),
+        Q.mcq("What does it mean?", "Calculer, s'ils existent, le ou les antécédent(s) de −5.", "Find every x with f(x) = −5 (there may be none)", ["Calculate f(−5)", "There is exactly one answer", "Draw the point (−5 ; 0)"]),
+        Q.mcq("What does it mean?", "Pour tout x de [−4 ; 5], on a f(x) ≤ 2.", "For every x from −4 to 5, f(x) is at most 2", ["f(−4) = 2", "f(x) = 2 only once", "f is increasing"]),
+        Q.mcq("What does it mean?", "Combien de solution(s) possède l'équation f(x) = 3 ?", "How many x give f(x) = 3?", ["What is f(3)?", "Solve 3x = f", "Is f(3) positive?"]),
+        Q.mcq("What does it mean?", "Sur quel(s) intervalle(s) g est-elle croissante et négative ?", "Where is g going up AND below zero?", ["Where is g going down?", "What is the minimum of g?", "Where is g positive?"]),
+      ] },
+    ] },
+    { title: "Function instructions", fr: "Consignes sur les fonctions", sub: "Words from your function tests.", lessons: [
+      { id: "f1", t: "Function words 1", glyph: "1", gen: wordsLesson("Function words", FUN1, "These words appear in almost every function question.") },
+      { id: "f2", t: "Function words 2", glyph: "2", gen: wordsLesson("More function words", FUN2, "Words about tables, equations and inequalities.") },
+      { id: "f3", t: "Decode it", glyph: "★", gen: () => [
+        Q.mcq("What does it mean?", "Calculer l'image de −1 par la fonction f.", "Calculate f(−1)", ["Find x such that f(x) = −1", "Draw the point −1", "Solve f(x) = 0"]),
+        Q.mcq("What does it mean?", "Calculer, s'ils existent, le ou les antécédent(s) de 7 par f.", "Find all x such that f(x) = 7", ["Calculate f(7)", "Draw y = 7", "Compare f(7) and 7"]),
+        Q.mcq("What does it mean?", "Dresser le tableau de variation de f.", "Make a table showing where f goes up and down", ["Make a table of values", "Calculate the variation", "Draw the curve"]),
+        Q.mcq("What does it mean?", "Pour quelles valeurs de x a-t-on f(x) < 0 ?", "For which x is f(x) negative?", ["What is f(0)?", "Is f(x) zero?", "Where is f increasing?"]),
+        Q.mcq("What does it mean?", "À l'aide du graphique, résoudre l'inéquation f(x) ≥ 7.", "Use the graph: find all x where the curve is at height 7 or higher", ["Calculate f(7)", "Find where f(x) = 7 only", "Draw the line x = 7"]),
+        Q.mcq("What does it mean?", "Identifier leurs courbes représentatives.", "Match each function to its graph", ["Draw each graph", "Calculate each function", "Name the axes"]),
+      ] },
+    ] },
+    { title: "Real test practice", fr: "Entraînement sur tes contrôles", sub: "Full instructions from your three tests.", lessons: [
+      { id: "t1", t: "Your tests", glyph: "★", gen: () => [
+        Q.info("Read like a detective", "<p>For each instruction, find: <b>1)</b> the action verb, <b>2)</b> what it is about, <b>3)</b> how precise the answer must be.</p>", "Strategy"),
+        Q.mcq("What does it ask?", "Répondre aux questions suivantes à l'aide du graphique, en donnant précisément les arguments graphiques.", "Answer using the graph, and say exactly what you see on it", ["Answer without the graph", "Draw a new graph", "Give only numbers"]),
+        Q.mcq("What does it ask?", "Comparer f(−4) et g(−4).", "Say which is bigger: f(−4) or g(−4)", ["Add f(−4) and g(−4)", "Calculate f(−4) × g(−4)", "Find x = −4"]),
+        Q.mcq("What does it ask?", "Les affirmations suivantes sont-elles vraies ?", "For each statement, say true or false and explain", ["Copy the statements", "Prove all statements are true", "Choose one statement"]),
+        Q.mcq("What does it ask?", "On appelle x₁ et x₂ les solutions de l'équation f(x) = 0.", "x₁ and x₂ are the names for the two solutions of f(x) = 0", ["Calculate f(x₁)", "x₁ = x₂", "f(0) = x₁"]),
+        Q.tap("Tap the words that tell you HOW PRECISE the answer must be.", ["Donner", "la valeur exacte", "puis", "la valeur approchée", "au centième", "de x₁ et x₂."], [1, 4], "Give the exact value, then the approximate value to 2 decimal places."),
+        Q.tap("Tap the action verb.", ["Sur quel(s) intervalle(s)", "g", "est-elle", "croissante", "et", "négative ?"], [0], "On which interval(s) is g increasing and negative?", "Here there is no verb at the start: the question words \"Sur quel(s) intervalle(s)\" tell you to give intervals."),
+      ] },
+    ] },
+  ] };
+
+/* ---------- COURSE B: WRITE YOUR ANSWERS (FUNCTIONS) ---------- */
+const FX = "f(x) = x² − 2, définie sur [−4 ; 4]";
+const B_IMG = [["l'image de −1 par f", "the image of −1 under f"], ["f(−1) = …", "f of −1 equals …"], ["on remplace x par −1", "we replace x with −1"], ["n'appartient pas à", "is not in"], ["n'a pas d'image", "has no image"]];
+const B_ANT = [["On cherche x tel que f(x) = 7", "We look for x such that f(x) = 7"], ["les antécédents de 7 sont −3 et 3", "the preimages of 7 are −3 and 3"], ["n'a pas d'antécédent", "has no preimage"], ["un seul antécédent", "only one preimage"], ["car", "because"], ["ou", "or"]];
+const B_GR = [["graphiquement", "using the graph"], ["on lit", "we read"], ["l'abscisse", "the x-coordinate"], ["l'ordonnée", "the y-coordinate"], ["au-dessus de", "above"], ["au-dessous de", "below"], ["le point d'intersection", "the crossing point"], ["l'axe des abscisses", "the x-axis"]];
+const B_VAR = [["croissante sur [0 ; 4]", "increasing on [0 ; 4]"], ["décroissante sur [−4 ; 0]", "decreasing on [−4 ; 0]"], ["le minimum", "the smallest value"], ["le maximum", "the biggest value"], ["atteint en x = 0", "reached at x = 0"]];
+const B_EQ = [["a deux solutions", "has two solutions"], ["la droite d'équation y = 3", "the horizontal line y = 3"], ["coupe Cf en deux points", "crosses Cf at two points"], ["l'ensemble des solutions S", "the set of solutions S"], ["∪", "\"union\": joins two intervals"], ["supérieur ou égal à (≥)", "greater than or equal to"]];
+const B_TF = [["vrai", "true"], ["faux", "false"], ["un contre-exemple", "a counterexample"], ["pour tout x", "for every x"], ["en effet", "indeed (here is why)"]];
+const model = lines => `<div class="mlist">${lines.map(l => `<div class="mrow"><div class="mfr">${glossF(l[0])}</div><div class="men">${esc(l[1])}</div></div>`).join("")}</div><p class="small">Hover over (or tap) a French word to see its meaning.</p>`;
+
+const COURSE_B = { id: "write", track: "main", title: "Write your answers", fr: "Rédiger : les fonctions", color: "var(--r-calc)", blurb: "The sentences you need for function questions.",
+  units: [
+    { title: "Images", fr: "Les images", sub: "\"Calculer l'image de…\"", lessons: [
+      { id: "i1", t: "Words", glyph: "1", gen: wordsLesson("Images", B_IMG, `Example function: <b>${FX}</b>`) },
+      { id: "i2", t: "Sentences", glyph: "★", gen: () => [
+        Q.info("Model answers", `<p>${FX}</p>` + model([["f(−1) = (−1)² − 2 = 1 − 2 = −1", "f of −1 = (−1)² − 2 = 1 − 2 = −1 (replace x with −1, and use brackets!)"], ["L'image de −1 par f est −1.", "The image of −1 under f is −1."], ["6 n'appartient pas à [−4 ; 4], donc 6 n'a pas d'image par f.", "6 is not in [−4 ; 4], so 6 has no image."]]), "Model"),
+        Q.blank("L'", "image", " de −1 par f est −1.", "The image of −1 under f is −1.", ["antécédent", "courbe"]),
+        Q.mcq("Which calculation is correct?", "", "f(−1) = (−1)² − 2 = −1", ["f(−1) = −1² − 2 = −3", "f(−1) = −1 − 2 = −3", "f(−1) = (−1 − 2)² = 9"], { explain: "Always put brackets: (−1)² = (−1) × (−1) = 1." }),
+        Q.mcq("f is defined on [−4 ; 4]. \"Calculer l'image de 6.\" Best answer?", "", "6 n'appartient pas à [−4 ; 4], donc 6 n'a pas d'image par f.", ["f(6) = 6² − 2 = 34.", "L'image de 6 est 6.", "f(6) = 0."], { explain: "Critical thinking: read \"définie sur [−4 ; 4]\". 6 is outside!" }),
+        Q.build("The image of 3 under f is 7.", ["L'image", "de", "3", "par", "f", "est", "7."], ["antécédent", "sur"]),
+        Q.blank("6 ", "n'appartient pas à", " [−4 ; 4].", "6 is not in [−4 ; 4].", ["est égal à", "coupe"]),
+      ] },
+    ] },
+    { title: "Preimages", fr: "Les antécédents", sub: "\"Calculer le ou les antécédent(s) de…\"", lessons: [
+      { id: "a1", t: "Words", glyph: "1", gen: wordsLesson("Preimages", B_ANT, "An antécédent is an INPUT: an x that gives the number you want.") },
+      { id: "a2", t: "Sentences", glyph: "★", gen: () => [
+        Q.info("Model answers", `<p>${FX}</p>` + model([["On cherche x tel que f(x) = 7 : x² − 2 = 7", "We look for x such that f(x) = 7: x² − 2 = 7"], ["donc x² = 9, donc x₁ = 3 et x₂ = −3.", "so x² = 9, so x₁ = 3 and x₂ = −3."], ["Les antécédents de 7 par f sont 3 et −3.", "The preimages of 7 under f are 3 and −3."], ["x² ≥ 0, donc f(x) ≥ −2. Donc −5 n'a pas d'antécédent.", "x² is never negative, so f(x) is never below −2. So −5 has no preimage."]]), "Model"),
+        Q.mcq("x² = 9. What do you write?", "", "x₁ = 3 et x₂ = −3", ["x = 3", "x = 4,5", "x = 81"], { explain: "There are two solutions: 3² = 9 and (−3)² = 9. Call them x₁ and x₂." }),
+        Q.blank("−5 n'a pas d'", "antécédent", " par f.", "−5 has no preimage under f.", ["image", "solution"]),
+        Q.build("We look for x such that f(x) = 7.", ["On", "cherche", "x", "tel", "que", "f(x) = 7."], ["donc", "image"]),
+        Q.order([["On cherche x tel que f(x) = 7.", "We look for x such that f(x) = 7.", "hyp"], ["Or, f(x) = x² − 2.", "Now, f(x) = x² − 2.", "prop"], ["x² − 2 = 7, donc x² = 9, donc x₁ = 3 et x₂ = −3.", "x² − 2 = 7, so x² = 9, so x₁ = 3 and x₂ = −3.", "calc"], ["Donc les antécédents de 7 par f sont 3 et −3.", "Therefore the preimages of 7 under f are 3 and −3.", "concl"]], "Put the answer in order"),
+        Q.mcq("Which sentence explains why −5 has NO preimage?", "", "x² ≥ 0, donc f(x) ≥ −2, et −5 < −2.", ["Car −5 est négatif.", "Car f(−5) = 23.", "Car 5 n'est pas dans [−4 ; 4]."], { explain: "f(x) can never go below −2, and −5 is below −2." }),
+      ] },
+    ] },
+    { title: "Reading a graph", fr: "Lire un graphique", sub: "\"À l'aide du graphique…\"", lessons: [
+      { id: "r1", t: "Words", glyph: "1", gen: wordsLesson("Graph words", B_GR, "Use these words to give your \"arguments graphiques\" (what you see on the graph).") },
+      { id: "r2", t: "Sentences", glyph: "★", gen: () => [
+        Q.info("Model answers", model([["En x = −1, Cf est au-dessus de Cg, donc f(−1) > g(−1).", "At x = −1, Cf is above Cg, so f(−1) > g(−1)."], ["Les solutions de f(x) = g(x) sont les abscisses des points d'intersection de Cf et Cg.", "Solutions of f(x) = g(x) = x-coordinates of the crossing points."], ["f(x) < 0 quand Cf est au-dessous de l'axe des abscisses.", "f(x) < 0 when Cf is below the x-axis."]]), "Model"),
+        Q.mcq("At x = 3, Cf is ABOVE Cg. Which sentence is right?", "", "En x = 3, Cf est au-dessus de Cg, donc f(3) > g(3).", ["f(3) < g(3) car Cf est au-dessus.", "f(3) = g(3).", "f(3) > g(3)."], { explain: "The last one has no graph argument: always say what you SEE." }),
+        Q.blank("f(x) < 0 quand Cf est ", "au-dessous de", " l'axe des abscisses.", "f(x) < 0 when Cf is below the x-axis.", ["au-dessus de", "parallèle à"]),
+        Q.mcq("\"Résoudre f(x) = g(x)\" with the graph. What do you look for?", "", "The x-coordinates where Cf and Cg cross", ["The y-coordinates where they cross", "The highest point of Cf", "Where Cf crosses the y-axis"]),
+        Q.mcq("f(x) = 3x + 1. Its curve is…", "", "une droite (a straight line)", ["une parabole", "un cercle", "une courbe en cloche"], { explain: "3x + 1 is an affine function: its graph is a line. x² gives a parabola." }),
+        Q.build("Cf is above Cg.", ["Cf", "est", "au-dessus", "de", "Cg."], ["au-dessous", "par"]),
+      ] },
+    ] },
+    { title: "Variations", fr: "Les variations", sub: "\"Dresser le tableau de variation…\"", lessons: [
+      { id: "m1", t: "Words", glyph: "1", gen: wordsLesson("Variation words", B_VAR, "Up and down, smallest and biggest.") },
+      { id: "m2", t: "Sentences", glyph: "★", gen: () => [
+        Q.info("Model answers", `<p>${FX}</p><div class="vtab"><div>x</div><div>−4</div><div>0</div><div>4</div><div>f(x)</div><div class="hi">14</div><div class="lo">−2 <span>↘ ↗</span></div><div class="hi">14</div></div>` + model([["f est décroissante sur [−4 ; 0] et croissante sur [0 ; 4].", "f goes down on [−4 ; 0] and up on [0 ; 4]."], ["Le minimum de f est −2, atteint en x = 0.", "The smallest value is −2, at x = 0."]]), "Model"),
+        Q.blank("f est ", "décroissante", " sur [−4 ; 0].", "f is decreasing on [−4 ; 0].", ["croissante", "négative"]),
+        Q.blank("Le minimum de f est −2, ", "atteint", " en x = 0.", "The minimum of f is −2, reached at x = 0.", ["croissante", "égal"]),
+        Q.mcq("Which sentence is correct?", "", "Le minimum de f est −2, atteint en x = 0.", ["Le minimum de f est 0.", "Le minimum de f est −2, atteint en x = −2.", "Le minimum de x est −2."], { explain: "The minimum is a VALUE f(x) = −2. It is reached at x = 0. Don't mix them up." }),
+        Q.build("f is increasing on [0 ; 4].", ["f", "est", "croissante", "sur", "[0 ; 4]."], ["décroissante", "par"]),
+      ] },
+    ] },
+    { title: "Equations and inequalities", fr: "Équations et inéquations", sub: "\"Combien de solutions…\", \"Résoudre…\"", lessons: [
+      { id: "e1", t: "Words", glyph: "1", gen: wordsLesson("Equation words", B_EQ, "How to talk about solutions.") },
+      { id: "e2", t: "Sentences", glyph: "★", gen: () => [
+        Q.info("Model answers", `<p>${FX}</p>` + model([["L'équation f(x) = 3 a deux solutions, car la droite d'équation y = 3 coupe Cf en deux points.", "f(x) = 3 has two solutions because the line y = 3 crosses Cf twice."], ["Les solutions de f(x) ≥ 7 sont S = [−4 ; −3] ∪ [3 ; 4].", "The solutions of f(x) ≥ 7 are S = [−4 ; −3] ∪ [3 ; 4]."], ["x² − 2 = 0, donc x² = 2, donc x₁ = √2 et x₂ = −√2.", "x² − 2 = 0, so x² = 2, so x₁ = √2 and x₂ = −√2."], ["x₁ = √2 ≈ 1,41 et x₂ = −√2 ≈ −1,41.", "Exact values first, then approximate values: x₁ ≈ 1.41 and x₂ ≈ −1.41."]]), "Model"),
+        Q.mcq("How many solutions does f(x) = −2 have?", "", "Une seule : x = 0", ["Deux", "Aucune", "Trois"], { explain: "The line y = −2 only touches Cf at its lowest point, x = 0." }),
+        Q.blank("L'équation f(x) = 3 a deux solutions, car la droite d'équation y = 3 ", "coupe", " Cf en deux points.", "… because the line y = 3 crosses Cf at two points.", ["est", "atteint"]),
+        Q.mcq("Solutions of f(x) ≥ 7 on [−4 ; 4]?", "", "S = [−4 ; −3] ∪ [3 ; 4]", ["S = [−3 ; 3]", "x = 3", "S = [7 ; 14]"], { explain: "Where the curve is at height 7 or more: at both ends. ∪ joins the two pieces." }),
+        Q.build("The equation has two solutions.", ["L'équation", "a", "deux", "solutions."], ["est", "image"]),
+      ] },
+    ] },
+    { title: "True or false?", fr: "Vrai ou faux ?", sub: "\"Les affirmations suivantes sont-elles vraies ?\"", lessons: [
+      { id: "tf1", t: "Words", glyph: "1", gen: wordsLesson("True or false words", B_TF, "Saying \"faux\" is not enough: you must show WHY.") },
+      { id: "tf2", t: "Sentences", glyph: "★", gen: () => [
+        Q.info("Model answers", model([["Faux : f(2) = 4 et 4 > 2. Donc 2 est un contre-exemple.", "False: f(2) = 4, bigger than 2. So x = 2 is a counterexample."], ["Vrai : sur [−4 ; 1], le maximum de f est 2, donc f(x) ≤ 2 < 3.", "True: the biggest value is 2, so f(x) is always below 3."]]), "Model"),
+        Q.mcq("A student wrote only \"faux.\" What is missing?", "", "A counterexample: one x that doesn't work", ["Nothing, it's enough", "The word \"vrai\"", "A drawing"], { explain: "Show the teacher WHY: give one x where it fails." }),
+        Q.mcq("To show \"pour tout x de [−4 ; 5], f(x) ≤ 2\" is FALSE, you need…", "", "one x where f(x) > 2", ["three x where f(x) ≤ 2", "the minimum of f", "f(0)"]),
+        Q.blank("Donc 2 est un ", "contre-exemple", ".", "So 2 is a counterexample.", ["antécédent", "maximum"]),
+        Q.order([["On veut savoir si f(x) ≤ 2 pour tout x de [−4 ; 5].", "We want to know if f(x) ≤ 2 for every x in [−4 ; 5].", "hyp"], ["Or, un seul contre-exemple suffit pour montrer que c'est faux.", "Now, one counterexample is enough to show it's false.", "prop"], ["On lit f(2) = 4, et 4 > 2.", "We read f(2) = 4, and 4 > 2.", "calc"], ["Donc l'affirmation est fausse.", "Therefore the statement is false.", "concl"]], "Put the answer in order"),
+        Q.build("False: 2 is a counterexample.", ["Faux :", "2", "est", "un", "contre-exemple."], ["vrai", "image"]),
+      ] },
+    ] },
+  ] };
+
+/* ---------- COURSE C: REASON (the Proof Pyramid course) ---------- */
+const LOGIC = {
+  hyp: { idea: "Start by writing what you already know: the facts the question gives you. Give things names, with letters.",
+    why: "It's the base of the pyramid. Without it, the reader doesn't know where you start.",
+    ex: ["We know that AB = 5 cm.", "Let n be a whole number.", "According to the question, ABCD is a rectangle."],
+    q: ["What goes on the first floor?", "The facts the question gives you", ["The answer you want", "What the drawing seems to show", "The rule you will use"]] },
+  prop: { idea: "Say which rule links what you know to what you want: a property, a definition or a theorem. Most rules have the shape \"if … then …\".",
+    why: "The rule is what allows your conclusion. No rule, no proof.",
+    ex: ["If a number is even, then it is divisible by 2.", "The angles of a triangle add up to 180°.", "By Pythagoras' theorem, …"],
+    q: ["What shape does a rule usually have?", "if … then …", ["because I think so", "it looks like it", "the answer is …"]] },
+  calc: { idea: "Apply the rule to YOUR numbers, step by step. Each line follows from the line before.",
+    why: "Never start with the result you want: that's going round in circles.",
+    ex: ["On one hand: AE² = 7.5² = 56.25", "Ĉ = 180° − 50° − 60° = 70°", "We notice that the two results are equal."],
+    q: ["Where must a calculation start from?", "The facts and the rule", ["The answer you want to get", "The drawing", "Anywhere you like"]] },
+  concl: { idea: "Answer the question with a full sentence that uses the question's own words.",
+    why: "It's the top of the pyramid: it only stands if every floor below is written.",
+    ex: ["Therefore angle Ĉ measures 70°.", "So triangle ACE is right-angled at C.", "Therefore the statement is false."],
+    q: ["What must the conclusion do?", "Answer the question in a sentence", ["Repeat the facts", "Ask a new question", "Give a number with no sentence"]] },
+};
+const VU = {
+  hyp: { words: [["On sait que…", "We know that…"], ["Soit…", "Let… (to name something)"], ["l'énoncé", "the question text"], ["les données", "the given facts"], ["D'après l'énoncé,", "According to the question,"]],
+    sent: [["", "On sait que", " ABCD est un rectangle.", "We know that ABCD is a rectangle."], ["", "Soit", " n un nombre entier.", "Let n be a whole number."], ["", "D'après l'énoncé,", " AB = 5 cm.", "According to the question, AB = 5 cm."]],
+    build: { en: "We know that the triangle is right-angled.", fr: ["On", "sait", "que", "le", "triangle", "est", "rectangle."], extra: ["donc", "or"] } },
+  prop: { words: [["la propriété", "the property (a rule)"], ["la définition", "the definition"], ["le théorème", "the theorem"], ["si … alors …", "if … then …"], ["d'après", "according to / by"]],
+    sent: [["", "D'après", " le théorème de Pythagore, …", "By Pythagoras' theorem, …"], ["", "Si", " un nombre est pair, alors il est divisible par 2.", "If a number is even, then it is divisible by 2."], ["On utilise ", "la définition", " d'un nombre pair.", "We use the definition of an even number."]],
+    build: { en: "If it rains, then the ground is wet.", fr: ["S'il", "pleut,", "alors", "le", "sol", "est", "mouillé."], extra: ["donc", "soit"] } },
+  calc: { words: [["on calcule", "we calculate"], ["D'une part", "on one hand"], ["D'autre part", "on the other hand"], ["On constate que", "we notice that"], ["la vérification", "the check"]],
+    sent: [["", "D'une part", " : 3 × 4 = 12.", "On one hand: 3 × 4 = 12."], ["", "D'autre part", " : 6 + 6 = 12.", "On the other hand: 6 + 6 = 12."], ["", "On constate que", " les deux résultats sont égaux.", "We notice that the two results are equal."]],
+    build: { en: "We notice that the results are equal.", fr: ["On", "constate", "que", "les", "résultats", "sont", "égaux."], extra: ["soit", "or"] } },
+  concl: { words: [["La solution est…", "The solution is…"], ["mesure", "measures"], ["est égal à", "is equal to"], ["n'est pas", "is not"], ["l'affirmation est fausse", "the statement is false"]],
+    sent: [["Donc l'angle Ĉ ", "mesure", " 70°.", "Therefore angle Ĉ measures 70°."], ["Donc le triangle ", "n'est pas", " rectangle.", "Therefore the triangle is not right-angled."], ["", "La solution est", " 5.", "The solution is 5."]],
+    build: { en: "Therefore the statement is false.", fr: ["Donc", "l'affirmation", "est", "fausse."], extra: ["vraie.", "or"] } },
+};
+const BRIDGES = [
+  { from: "hyp", to: "prop", enw: "Now,", w: "Or,", role: "brings in the rule you are going to use.",
+    note: "In French this is \"Or,\". Careful: it does NOT mean English \"or\", and it's not gold!",
+    exEn: "We know n is even. Now, an even number is written 2k.", ex: ["On sait que n est pair. ", "Or,", " un nombre pair s'écrit 2k.", "We know n is even. Now, an even number is written 2k."] },
+  { from: "prop", to: "calc", enw: "We apply the rule:", w: "On applique la règle :", role: "takes the general rule and uses it with YOUR numbers.",
+    note: "In French: \"On applique la règle :\" then you write your calculation.",
+    exEn: "The angles add up to 180°. We apply the rule: Ĉ = 180° − 50° − 60°.", ex: ["Or, la somme des angles fait 180°. ", "On applique la règle :", " Ĉ = 180° − 50° − 60°.", "The angles add up to 180°. We apply the rule: Ĉ = 180° − 50° − 60°."] },
+  { from: "calc", to: "concl", enw: "Therefore,", w: "Donc,", role: "announces the conclusion: the answer to the question.",
+    note: "In French: \"Donc,\". Without it, the proof isn't finished!",
+    exEn: "Ĉ = 70°. Therefore, angle Ĉ measures 70°.", ex: ["Ĉ = 70°. ", "Donc,", " l'angle Ĉ mesure 70°.", "Ĉ = 70°. Therefore, angle Ĉ measures 70°."] },
+];
+const CHAIN_EN = [[["We know that Â = 50° and B̂ = 60°.", "", "hyp"], ["Now, the angles of a triangle add up to 180°.", "", "prop"], ["We apply the rule: Ĉ = 180° − 50° − 60° = 70°.", "", "calc"], ["Therefore angle Ĉ measures 70°.", "", "concl"]],
+  [["Let n be an even number.", "", "hyp"], ["Now, by definition, n = 2k.", "", "prop"], ["We apply the rule: 3n = 3 × 2k = 2 × 3k.", "", "calc"], ["Therefore 3n is even.", "", "concl"]]];
+const CHAINS_FR = [
+  [["On sait que Â = 50° et B̂ = 60°.", "We know Â = 50° and B̂ = 60°.", "hyp"], ["Or, la somme des angles d'un triangle est 180°.", "Now, the angles of a triangle add up to 180°.", "prop"], ["On applique la règle : Ĉ = 180° − 50° − 60° = 70°.", "We apply the rule…", "calc"], ["Donc l'angle Ĉ mesure 70°.", "Therefore angle Ĉ measures 70°.", "concl"]],
+  [["On sait que les diagonales de ABCD ont le même milieu.", "We know the diagonals have the same midpoint.", "hyp"], ["Or, si les diagonales d'un quadrilatère ont le même milieu, alors c'est un parallélogramme.", "If …, then it's a parallelogram.", "prop"], ["Donc ABCD est un parallélogramme.", "Therefore ABCD is a parallelogram.", "concl"]],
+  [["Dans le triangle ACE, le plus grand côté est [AE].", "In triangle ACE, the longest side is [AE].", "hyp"], ["Or, d'après la réciproque du théorème de Pythagore, si AE² = AC² + CE², le triangle est rectangle.", "By the converse of Pythagoras' theorem…", "prop"], ["On applique la règle : AE² = 56,25 et AC² + CE² = 56,25.", "We apply the rule…", "calc"], ["Donc le triangle ACE est rectangle en C.", "Therefore ACE is right-angled at C.", "concl"]],
+];
+const UNIT_ORDER = ["hyp", "prop", "calc", "concl"];
+const ALLEX = UNIT_ORDER.flatMap(u => LOGIC[u].ex.map(e => ({ t: e, u })));
+const PYRW = UNIT_ORDER.flatMap(u => VU[u].words.map(w => ({ fr: w[0], en: w[1], u })));
+function genIdea(u) {
+  const L = LOGIC[u], qs = [{ type: "idea", u }];
+  qs.push(Q.mcq(L.q[0], "", L.q[1], L.q[2]));
+  for (let k = 0; k < 2; k++) {
+    const mine = L.ex[k], others = UNIT_ORDER.filter(x => x !== u).map(x => pick(LOGIC[x].ex, 1)[0]);
+    qs.push(Q.mcq(`Which sentence belongs on floor ${LV[u].n}, "${LV[u].en}"?`, "", mine, others));
+  }
+  const other = pick(ALLEX.filter(x => x.u !== u), 1)[0];
+  qs.push(Q.level(L.ex[2], "", u, "en-GB"), Q.level(other.t, "", other.u, "en-GB"));
+  return qs;
+}
+function genPyrWords(u) { return [Q.words(`${LV[u].en} = ${LV[u].fr}`, VU[u].words, "You know the idea. Now here is how to say it in French.", "New words"), ...wordDrills(VU[u].words)]; }
+function genPyrUse(u) {
+  const U = VU[u], qs = [];
+  U.sent.forEach(s => qs.push(Q.blank(s[0], s[1], s[2], s[3], pick(PYRW.filter(x => x.u !== u), 2).map(x => x.fr))));
+  qs.push(Q.build(U.build.en, U.build.fr, U.build.extra));
+  const mine = pick(U.words, 1)[0], other = pick(PYRW.filter(x => x.u !== u), 1)[0];
+  qs.push(Q.level(mine[0], mine[1], u), Q.level(other.fr, other.en, other.u));
+  return shuffle(qs);
+}
+function genBridge(i) {
+  const b = BRIDGES[i];
+  return [{ type: "bridge", b: i },
+    Q.mcq(`In English: which words take you from "${LV[b.from].en}" to "${LV[b.to].en}"?`, "", b.enw, [...BRIDGES.filter(x => x !== b).map(x => x.enw), "Let…"]),
+    Q.mcq(`Now in French: how do you say "${b.enw}"?`, "", b.w, [...BRIDGES.filter(x => x !== b).map(x => x.w), "Soit…"], { speakAnswer: true }),
+    Q.blank(b.ex[0], b.w, b.ex[2], b.ex[3], BRIDGES.filter(x => x !== b).map(x => x.w))];
+}
+function genChain() {
+  return [{ type: "chain" }, ...CHAIN_EN.map(c => Q.order(c)), Q.info("Now in French", "<p>Same logic, French words. Look for <b>On sait que / Soit</b> (start), <b>Or</b> (rule), <b>On applique la règle</b> (steps) and <b>Donc</b> (conclusion).</p>", "FR"), ...shuffle(CHAINS_FR).map(c => Q.order(c))];
+}
+const FX_CHAINS = [
+  [["f est définie sur [−4 ; 4] par f(x) = x² − 2.", "f is defined on [−4 ; 4] by f(x) = x² − 2.", "hyp"], ["Or, un antécédent de 7 est un x tel que f(x) = 7.", "Now, a preimage of 7 is an x such that f(x) = 7.", "prop"], ["On applique la règle : x² − 2 = 7, donc x² = 9, donc x₁ = 3 et x₂ = −3.", "We apply the rule: x² − 2 = 7, so x² = 9, so x₁ = 3 and x₂ = −3.", "calc"], ["Donc les antécédents de 7 sont 3 et −3.", "Therefore the preimages of 7 are 3 and −3.", "concl"]],
+  [["f est définie sur [−4 ; 4].", "f is defined on [−4 ; 4].", "hyp"], ["Or, f(x) existe seulement si x est dans [−4 ; 4].", "Now, f(x) only exists if x is in [−4 ; 4].", "prop"], ["6 n'appartient pas à [−4 ; 4].", "6 is not in [−4 ; 4].", "calc"], ["Donc 6 n'a pas d'image par f.", "Therefore 6 has no image under f.", "concl"]],
+  [["On veut savoir si f(x) ≤ 2 pour tout x de [−4 ; 5].", "We want to know if f(x) ≤ 2 for every x in [−4 ; 5].", "hyp"], ["Or, un seul contre-exemple suffit pour montrer que c'est faux.", "Now, one counterexample is enough to show it's false.", "prop"], ["On lit sur le graphique f(2) = 4, et 4 > 2.", "On the graph we read f(2) = 4, and 4 > 2.", "calc"], ["Donc l'affirmation est fausse.", "Therefore the statement is false.", "concl"]],
+  [["On lit les courbes Cf et Cg sur le graphique.", "We read the curves Cf and Cg on the graph.", "hyp"], ["Or, les solutions de f(x) = g(x) sont les abscisses des points d'intersection.", "Now, the solutions of f(x) = g(x) are the x-coordinates of the crossing points.", "prop"], ["Cf et Cg se coupent en x = −3 et en x = 1.", "Cf and Cg cross at x = −3 and at x = 1.", "calc"], ["Donc S = {−3 ; 1}.", "Therefore S = {−3 ; 1}.", "concl"]],
+];
+const PROOF_UNIT = { title: "Full proofs", fr: "Preuves complètes", sub: "Write one sentence on each floor of the pyramid.", lessons: [
+      { id: "w4", t: "Write full proofs", glyph: "★", gen: () => [
+        Q.info("One floor, one sentence", `${pyramidHTML(null, { mini: true })}<p>Write one sentence per floor. Start each one with its bridge word: <b>On sait que</b> → <b>Or,</b> → <b>On applique la règle :</b> → <b>Donc,</b></p>`, "Pyramid"),
+        WS("Dans le triangle ABC, Â = 50° et B̂ = 60°. Calculer Ĉ.", "In triangle ABC, Â = 50° and B̂ = 60°. Find Ĉ.", [
+          part("", "On sait que …", ["On sait que Â = 50° et B̂ = 60°.", "Dans le triangle ABC, Â = 50° et B̂ = 60°."], ["50", "60"], "hyp"),
+          part("", "Or, …", ["Or, la somme des angles d'un triangle est égale à 180°.", "Or, la somme des angles d'un triangle est 180°."], ["somme", "180"], "prop"),
+          part("", "On applique la règle : …", ["On applique la règle : Ĉ = 180° − 50° − 60° = 70°.", "Ĉ = 180° − 50° − 60° = 70°"], ["70"], "calc"),
+          part("", "Donc, …", ["Donc l'angle Ĉ mesure 70°.", "Donc Ĉ = 70°."], ["donc", "70"], "concl")], ["la somme des angles d'un triangle", "mesure"]),
+        WS("Les antécédents de 7 par f, avec f(x) = x² − 2.", "The preimages of 7 under f, with f(x) = x² − 2.", [
+          part("", "On sait que …", ["On sait que f(x) = x² − 2.", "f est définie par f(x) = x² − 2."], ["x2-2"], "hyp"),
+          part("", "Or, …", ["Or, un antécédent de 7 est un x tel que f(x) = 7."], ["antecedent", "f(x)=7"], "prop"),
+          part("", "On applique la règle : …", ["On applique la règle : x² − 2 = 7, donc x² = 9, donc x₁ = 3 et x₂ = −3."], ["x2=9", "3"], "calc"),
+          part("", "Donc, …", ["Donc les antécédents de 7 sont 3 et −3."], ["donc", "antecedents"], "concl")], ["un antécédent", "tel que", "donc"]),
+        WS("Démontrer que le triangle ACE est rectangle en C. (AC = 4,5 cm ; CE = 6 cm ; AE = 7,5 cm)", "Prove that triangle ACE is right-angled at C.", [
+          part("", "Dans le triangle ACE, …", ["Dans le triangle ACE, le plus grand côté est [AE]."], ["ace", "ae"], "hyp"),
+          part("", "Or, d'après …", ["Or, d'après la réciproque du théorème de Pythagore, si AE² = AC² + CE², alors le triangle est rectangle.", "Or, d'après la réciproque du théorème de Pythagore,"], ["reciproque", "pythagore"], "prop"),
+          part("", "On applique la règle : …", ["On applique la règle : AE² = 56,25 et AC² + CE² = 56,25.", "AE² = 7,5² = 56,25 et AC² + CE² = 4,5² + 6² = 56,25"], ["56#25"], "calc"),
+          part("", "Donc, …", ["Donc le triangle ACE est rectangle en C."], ["donc", "rectangle en c"], "concl")], ["le plus grand côté", "la réciproque du théorème de Pythagore", "rectangle en C"]),
+        WS("Démontrer que les droites (BD) et (CE) sont parallèles. (AB = 3 ; AC = 4,5 ; AD = 5 ; AE = 7,5)", "Prove that lines (BD) and (CE) are parallel.", [
+          part("", "On sait que …", ["On sait que les points A, B, C et A, D, E sont alignés dans le même ordre."], ["alignes"], "hyp"),
+          part("", "Or, d'après …", ["Or, d'après la réciproque du théorème de Thalès, si AB/AC = AD/AE, alors (BD) et (CE) sont parallèles."], ["reciproque", "thales"], "prop"),
+          part("", "On applique la règle : …", ["On applique la règle : AB/AC = 3/4,5 = 2/3 et AD/AE = 5/7,5 = 2/3."], ["2/3"], "calc"),
+          part("", "Donc, …", ["Donc les droites (BD) et (CE) sont parallèles."], ["donc", "paralleles"], "concl")], ["alignés dans le même ordre", "la réciproque du théorème de Thalès", "parallèles"]),
+      ] },
+    ] };
+const pyrUnit = (u, i) => ({ title: `Floor ${LV[u].n}: ${LV[u].en}`, fr: LV[u].fr, sub: LOGIC[u].idea, color: `var(--r-${u})`, lessons: [
+  { id: u + "-idea", t: "The idea", glyph: "EN", gen: () => genIdea(u) },
+  { id: u + "-words", t: "Say it in French", glyph: "FR", gen: () => genPyrWords(u) },
+  { id: u + "-use", t: "Use it in French", glyph: "FR", gen: () => genPyrUse(u) },
+  ...(i < 3 ? [{ id: "bridge-" + i, t: "The bridge", bridge: i, gen: () => genBridge(i) }] : []),
+] });
+const COURSE_C = { id: "reason", track: "bonus", title: "The proof pyramid", fr: "Raisonner : la pyramide", color: "var(--r-prop)", blurb: "Order a proof: I know → Now → We apply → Therefore. Then write full proofs (Pythagore, Thalès).",
+  units: [...UNIT_ORDER.map(pyrUnit),
+    { title: "The whole chain", fr: "Toute la chaîne", sub: "Four floors, three bridges.", color: "var(--accent)", lessons: [{ id: "final", t: "The whole chain", glyph: "★", gen: genChain }] },
+    { title: "The pyramid for functions", fr: "La pyramide et les fonctions", sub: "Use the same logic in function questions.", color: "var(--r-calc)", lessons: [
+      { id: "fx-sort", t: "Sort the sentences", glyph: "1", gen: () => [Q.info("Every answer is a pyramid", "<p>Even a function question has the four floors. Put each sentence on its floor.</p>", "Functions"), ...pick(FX_CHAINS.flat(), 8).map(s => Q.level(s[0], s[1], s[2]))] },
+      { id: "fx-order", t: "Order the answers", glyph: "★", gen: () => shuffle(FX_CHAINS).map(c => Q.order(c, "Put the answer in order")) },
+    ] },
+    PROOF_UNIT,
+  ] };
+
+
+/* ---------- COURSE D: WRITE IT YOURSELF ---------- */
+const W = (en, variants, hints, keys) => ({ type: "write", en, parts: [{ variants, keys: keys || [] }], hints: hints || [] });
+const WS = (fr, en, parts, hints) => ({ type: "write", fr, enQ: en, parts, hints: hints || [] });
+const part = (label, starter, variants, keys, role) => ({ label, starter, variants, keys: keys || [], role });
+const COURSE_D = { id: "writeit", track: "main", title: "Write it yourself", fr: "J'écris seul", color: "var(--r-concl)", blurb: "Type the French yourself, from short sentences to answers in steps. Small mistakes are accepted.",
+  units: [
+    { title: "Short sentences", fr: "Phrases courtes", sub: "Translate into French. Accents and capitals don't matter.", lessons: [
+      { id: "w1", t: "Short sentences", glyph: "1", gen: () => [
+        Q.info("How it works", "<p>Type the French sentence. You don't need perfect spelling: missing accents, capitals or a small typo are accepted, and the correct version is shown.</p><p>Tap the <b>useful words</b> to insert them, and use the symbol buttons for ², −, √…</p>", "Writing"),
+        W("We know that f(x) = x² − 2.", ["On sait que f(x) = x² − 2."], ["On sait que"]),
+        W("Therefore f(3) = 7.", ["Donc f(3) = 7."], ["Donc"]),
+        W("The statement is false.", ["L'affirmation est fausse."], ["l'affirmation", "fausse"]),
+        W("f is increasing.", ["f est croissante."], ["croissante"]),
+        W("The solution is 5.", ["La solution est 5."], ["La solution"]),
+        W("Let x be a real number.", ["Soit x un nombre réel.", "Soit x un réel."], ["Soit", "un nombre réel"]),
+      ] },
+    ] },
+    { title: "Function sentences", fr: "Phrases sur les fonctions", sub: "The sentences you need in a function test.", lessons: [
+      { id: "w2", t: "Function sentences", glyph: "2", gen: () => [
+        W("The image of −1 under f is −1.", ["L'image de −1 par f est −1."], ["L'image", "par f"]),
+        W("The preimages of 7 are 3 and −3.", ["Les antécédents de 7 sont 3 et −3.", "Les antécédents de 7 par f sont 3 et −3.", "Les antécédents de 7 sont −3 et 3."], ["Les antécédents"]),
+        W("−5 has no preimage.", ["−5 n'a pas d'antécédent.", "−5 n'a pas d'antécédent par f."], ["n'a pas d'antécédent"]),
+        W("f is decreasing on [−4 ; 0].", ["f est décroissante sur [−4 ; 0]."], ["décroissante", "sur"]),
+        W("The minimum of f is −2, reached at x = 0.", ["Le minimum de f est −2, atteint en x = 0."], ["Le minimum", "atteint en"]),
+        W("The equation f(x) = 3 has two solutions.", ["L'équation f(x) = 3 a deux solutions."], ["L'équation", "a deux solutions"]),
+        W("6 is not in [−4 ; 4], so 6 has no image.", ["6 n'appartient pas à [−4 ; 4], donc 6 n'a pas d'image.", "6 n'appartient pas à [−4 ; 4], donc 6 n'a pas d'image par f."], ["n'appartient pas à", "donc", "n'a pas d'image"]),
+      ] },
+    ] },
+    { title: "Answers in steps", fr: "Réponses en plusieurs étapes", sub: "Answer a real French question, one line at a time.", lessons: [
+      { id: "w3", t: "Answers in steps", glyph: "3", gen: () => [
+        WS("Calculer l'image de 3 par f, avec f(x) = x² − 2.", "Calculate the image of 3 under f, with f(x) = x² − 2.", [
+          part("Calculate", "f(3) = …", ["f(3) = 3² − 2 = 7", "f(3) = 3² − 2 = 9 − 2 = 7", "f(3) = 9 − 2 = 7"], ["f(3)", "7"]),
+          part("Answer in a sentence", "L'image de 3 par f est …", ["L'image de 3 par f est 7."], ["image", "7"])], ["L'image de", "par f est"]),
+        WS("Calculer les antécédents de 7 par f, avec f(x) = x² − 2.", "Find the preimages of 7 under f, with f(x) = x² − 2.", [
+          part("Say what you look for", "On cherche x tel que …", ["On cherche x tel que f(x) = 7."], ["cherche", "f(x)=7"]),
+          part("Calculate", "x² − 2 = 7, donc …", ["x² − 2 = 7, donc x² = 9", "x² − 2 = 7 donc x² = 9"], ["x2=9"]),
+          part("The two solutions", "x₁ = … et x₂ = …", ["x₁ = 3 et x₂ = −3", "x₁ = −3 et x₂ = 3"], ["3", "-3"]),
+          part("Answer in a sentence", "Les antécédents de 7 sont …", ["Les antécédents de 7 sont 3 et −3.", "Les antécédents de 7 par f sont 3 et −3.", "Les antécédents de 7 sont −3 et 3."], ["antecedents"])], ["On cherche x tel que", "donc", "Les antécédents de 7 sont"]),
+        WS("f est définie sur [−4 ; 4]. Calculer l'image de 6.", "f is defined on [−4 ; 4]. Calculate the image of 6.", [
+          part("Why?", "6 n'appartient pas à …", ["6 n'appartient pas à [−4 ; 4]."], ["appartient"]),
+          part("Conclusion", "Donc …", ["Donc 6 n'a pas d'image par f.", "Donc 6 n'a pas d'image."], ["donc", "image"])], ["n'appartient pas à", "Donc", "n'a pas d'image"]),
+        WS("Vrai ou faux ? « Pour tout x de [−4 ; 4], f(x) ≤ 10. » (f(x) = x² − 2)", "True or false? \"For every x in [−4 ; 4], f(x) ≤ 10.\"", [
+          part("True or false?", "Vrai / Faux", ["Faux."], ["faux"]),
+          part("Calculate a counterexample", "f(4) = …", ["f(4) = 4² − 2 = 14", "f(4) = 16 − 2 = 14"], ["14"]),
+          part("Conclusion", "14 > 10, donc …", ["14 > 10, donc 4 est un contre-exemple.", "Donc 4 est un contre-exemple."], ["contre"])], ["Faux", "donc", "un contre-exemple"]),
+        WS("Résoudre x² − 2 = 0. Donner les valeurs exactes, puis approchées au centième.", "Solve x² − 2 = 0. Give the exact values, then values rounded to 2 decimal places.", [
+          part("Calculate", "x² = …", ["x² = 2"], ["x2=2"]),
+          part("Exact values", "x₁ = √… et x₂ = …", ["x₁ = √2 et x₂ = −√2", "x₁ = −√2 et x₂ = √2"], ["√2"]),
+          part("Approximate values", "x₁ ≈ … et x₂ ≈ …", ["x₁ ≈ 1,41 et x₂ ≈ −1,41", "x₁ ≈ −1,41 et x₂ ≈ 1,41"], ["1#41"])], ["et", "≈"]),
+      ] },
+    ] },
+  ] };
+
+const COURSE_G = { id: "geo", track: "bonus", title: "Geometry questions", fr: "Lire un énoncé de géométrie", color: "var(--r-hyp)", blurb: "Words and instructions from the geometry test (Thalès, Pythagore, angles).",
+  units: [
+    { title: "Geometry instructions", fr: "Consignes de géométrie", sub: "Words from Exercise 1 and 2 of your test.", lessons: [
+      { id: "g1", t: "Geometry words 1", glyph: "1", gen: wordsLesson("Geometry words", GEO.slice(0, 5), "Words used to describe a figure.") },
+      { id: "g2", t: "Geometry words 2", glyph: "2", gen: wordsLesson("More geometry words", GEO.slice(5), "More words from your test.") },
+      { id: "g3", t: "Read the figure", glyph: "★", gen: () => [
+        Q.mcq("What does it mean?", "La droite perpendiculaire à (AB) passant par C coupe le segment [AB] en un point H.", "The line through C, at 90° to AB, meets segment AB at H", ["H is the middle of AB", "C is on segment AB", "AB is parallel to CH"]),
+        Q.mcq("What does it mean?", "M est un point du segment [AC] tel que AM = 6 cm.", "M is on segment AC, 6 cm from A", ["AC = 6 cm", "M is 6 cm from C", "M is the middle of AC"]),
+        Q.tap("Tap the TWO things you must calculate.", ["Calculer", "CH", "au dixième près", "puis", "une valeur approchée", "de", "l'aire", "du triangle ABC."], [1, 6], "Calculate CH to 1 decimal place, then an approximate value of the area of triangle ABC."),
+        Q.mcq("\"Calculer CN et CP au dixième près.\" What do you give?", "", "Two lengths, each with 1 decimal place", ["One angle", "Two areas", "A yes/no answer"]),
+        Q.blank("ACE est un triangle ", "rectangle en", " C.", "ACE is a triangle right-angled at C.", ["parallèle à", "passant par"]),
+      ] },
+    ] },
+    { title: "Your geometry test", fr: "Ton contrôle de géométrie", sub: "Real instructions from Contrôle 3.", lessons: [
+      { id: "gt", t: "Your test", glyph: "★", gen: () => [
+        Q.tap("Tap the words that tell you WHAT TO DO.", ["Démontrer que", "le triangle", "ACE", "est", "rectangle", "en C."], [0], "Prove that triangle ACE is right-angled at C."),
+        Q.tap("Tap the words that tell you WHAT TO DO.", ["Calculer", "au degré près", "l'angle", "CAE."], [0], "Calculate angle CAE to the nearest degree."),
+        Q.tap("Tap the words that tell you WHAT TO DO.", ["b)", "En déduire que", "le triangle", "ABD", "est", "un triangle rectangle."], [1], "Deduce (from a) that triangle ABD is right-angled.", "\"En déduire\" means: use your answer to a) to do this."),
+        Q.mcq("What does this question ask you to do?", "Le triangle ABC est-il rectangle ? Justifier par un théorème.", "Say yes or no, and explain with a theorem", ["Draw triangle ABC", "Calculate the area of ABC", "Just answer yes or no"]),
+        Q.mcq("\"Calculer au degré près l'angle CAE.\" Calculator: 36.8698976°. What do you write?", "", "CAE ≈ 37°", ["CAE = 36,87°", "CAE ≈ 36°", "CAE = 36,8698976°"], { explain: "Degré près = a whole number of degrees. 36,87 rounds up to 37." }),
+        Q.mcq("\"Calculer CH au dixième près.\" Your calculator shows 6.92820323. What do you write?", "", "CH ≈ 6,9 cm", ["CH = 6,92820323 cm", "CH ≈ 7 cm", "CH ≈ 6,93 cm"], { explain: "Dixième = 1 decimal place, with a comma." }),
+        Q.mcq("What does it mean?", "On admet que l'angle CAB = 60°.", "You can use CAB = 60° without proving it", ["You must prove that CAB = 60°", "CAB is a right angle", "Measure CAB with a protractor"]),
+        Q.mcq("What does it mean?", "D est un point de [AE] tel que AD = 5 cm.", "D is on segment [AE], and AD = 5 cm", ["D is the middle of [AE]", "AE = 5 cm", "D is outside the triangle"]),
+        Q.mcq("What does this question ask you to do?", "Faire une figure au dos de cette feuille.", "Draw the diagram on the back of the sheet", ["Fold the sheet", "Calculate on the back", "Copy the question"]),
+      ] },
+    ] },
+  ] };
+const COURSES = [COURSE_A, COURSE_B, COURSE_D, COURSE_G, COURSE_C];
+COURSES.forEach(c => c.units.forEach(u => u.lessons.forEach(l => { l.key = c.id + "/" + l.id; l.course = c; l.unit = u; })));
+const allLessons = c => c.units.flatMap(u => u.lessons);
+ALLWORDS = [...VERBS1, ...VERBS2, ...PREC, ...SMALL1, ...SMALL2, ...GEO, ...FUN1, ...FUN2, ...B_IMG, ...B_ANT, ...B_GR, ...B_VAR, ...B_EQ, ...B_TF, ...UNIT_ORDER.flatMap(u => VU[u].words)];
+
+/* ---------- decoder dictionary ---------- */
+const DICT = [
+["démontrer que","prove that"],["démontrer","prove"],["calculer","calculate"],["justifier","explain why"],["en déduire","use the answer above to get"],["résoudre","solve"],["déterminer","find"],["compléter","fill in"],["représenter","draw"],["tracer","draw"],["dresser","make (a table)"],["comparer","compare"],["identifier","match / recognise"],["donner","give"],["faire une figure","draw a diagram"],["répondre","answer"],["vérifier","check"],
+["sans justifier","no explanation needed"],["au degré près","to the nearest degree"],["au dixième près","to 1 decimal place"],["au centième près","to 2 decimal places"],["au centième","to 2 decimal places"],["au dixième","to 1 decimal place"],["valeur exacte","exact value"],["valeur approchée","approximate value"],["arrondi","rounded"],
+["est-il","is it"],["est-elle","is it"],["sont-elles","are they"],["a-t-on","do we have"],["pour quelles valeurs","for which values"],["combien de","how many"],["sur quel(s) intervalle(s)","on which interval(s)"],["intervalle","interval"],["intervalles","intervals"],["s'ils existent","if there are any"],["le ou les","the one or ones"],["tel que","such that"],["telle que","such that"],["on admet que","accept that"],["on rappelle que","reminder:"],["pour tout","for every"],["à l'aide du graphique","using the graph"],["les affirmations suivantes","the following statements"],["vraies","true"],["vrai","true"],["faux","false"],["suivant","following"],["suivantes","following"],["ci-contre","shown here"],["au dos de cette feuille","on the back of this sheet"],["arguments graphiques","evidence from the graph"],["précisément","precisely"],["en donnant","by giving"],
+["triangle","triangle"],["rectangle en","right-angled at"],["rectangle","right-angled"],["un point de","a point on"],["un point du","a point on the"],["point","point"],["droite","line"],["droites","lines"],["segment","segment"],["perpendiculaire à","perpendicular to"],["parallèle à","parallel to"],["parallèles","parallel"],["parallèle","parallel"],["passant par","going through"],["coupe","crosses"],["angle","angle"],["aire","area"],["une base","a base"],["hauteur correspondante","matching height"],["hauteur","height"],["côté","side"],["longueur","length"],
+["fonction","function"],["fonctions","functions"],["définie sur","defined on"],["définies sur","defined on"],["image","image (output)"],["antécédent(s)","preimage(s) (input x)"],["antécédent","preimage (input x)"],["antécédents","preimages"],["courbe représentative","graph (curve)"],["courbes représentatives","graphs (curves)"],["courbe","curve"],["courbes","curves"],["tableau de valeurs","table of values"],["tableau de variation","variation table"],["tableau de variations","variation table"],["tableau de signes","sign table"],["tableau","table"],["croissante","increasing"],["décroissante","decreasing"],["positive","positive"],["négative","negative"],["équation","equation"],["équations","equations"],["inéquation","inequality"],["solution(s)","solution(s)"],["solutions","solutions"],["solution","solution"],["possède","has"],["repère","axes"],["réel","real number"],["réels","real numbers"],["on a représenté","we have drawn"],["on donne","we are given"],["on appelle","we call"],["soit","let"],["puis","then"],["celui de","the one for"],["leurs","their"],["minimum","minimum"],["maximum","maximum"],["questions","questions"],["exercice","exercise"],["durée","time allowed"],["calculatrice autorisée","calculator allowed"],
+["et","and"],["ou","or"],["si","if"],["est","is"],["sont","are"],["dans","in"],["sur","on"],["par","by / under"],["avec","with"],["où","where"],["on a","we have"],["les","the"],["le","the"],["la","the"],["l'","the"],["un","a"],["une","a"],["de","of"],["du","of the"],["des","of the"],["d'","of"],["en","at / in"],["que","that"],["a","has"],["valeurs","values"],["valeur","value"]
+];
+const GLOSS_EXTRA = [
+["on cherche","we look for"],["cherche","look for"],["tel que","such that"],["donc","so / therefore"],["or","now (introduces the rule)"],["car","because"],["on sait que","we know that"],["on applique la règle","we apply the rule"],["applique","apply"],["règle","rule"],
+["l'image","the image (output)"],["n'a pas d'antécédent","has no preimage"],["n'a pas d'image","has no image"],["n'appartient pas à","is not in"],["appartient à","is in"],["un seul","only one"],["deux","two"],["trois","three"],
+["points d'intersection","crossing points"],["point d'intersection","crossing point"],["abscisses","x-coordinates"],["abscisse","x-coordinate"],["ordonnée","y-coordinate"],["l'axe des abscisses","the x-axis"],["au-dessus de","above"],["au-dessous de","below"],["quand","when"],["graphiquement","using the graph"],["on lit","we read"],["graphique","graph"],["se coupent","cross each other"],
+["le minimum","the minimum"],["le maximum","the maximum"],["atteint en","reached at"],["atteint","reached"],["l'ensemble des solutions","the set of solutions"],["la droite d'équation","the line with equation"],["a deux solutions","has two solutions"],
+["un contre-exemple","a counterexample"],["contre-exemple","counterexample"],["suffit","is enough"],["pour montrer","to show"],["c'est","it is"],["l'affirmation","the statement"],["affirmation","statement"],["fausse","false"],["on veut savoir si","we want to know if"],["existe seulement si","only exists if"],["n'est pas","is not"],
+["le plus grand côté","the longest side"],["d'après","according to / by"],["la réciproque","the converse"],["la contraposée","the contrapositive"],["théorème","theorem"],["d'une part","on one hand"],["d'autre part","on the other hand"],["on constate que","we notice that"],["égaux","equal"],["est égal à","is equal to"],["égale à","equal to"],
+["la somme des angles d'un triangle","the sum of the angles of a triangle"],["la somme","the sum"],["mesure","measures"],["les diagonales","the diagonals"],["le même milieu","the same midpoint"],["milieu","midpoint"],["quadrilatère","quadrilateral"],["parallélogramme","parallelogram"],
+["nombre","number"],["pair","even"],["entier","whole number"],["par définition","by definition"],["propriété","property"],["s'écrit","is written"],["résultats","results"],["la vérification","the check"],["s'il pleut","if it rains"],["alors","then"],["le sol","the ground"],["mouillé","wet"],["divisible par","divisible by"],["on utilise","we use"],["on remplace","we replace"],
+["environ","about"],["supérieur ou égal à","greater than or equal to"],["alignés dans le même ordre","collinear, in the same order"],["alignés","collinear (on one line)"],["le même ordre","the same order"],["les points","the points"],["l'angle","the angle"],["dans le triangle","in triangle"]
+];
+const PRESETS = [
+  "Démontrer que le triangle ACE est rectangle en C.",
+  "En déduire que le triangle ABD est un triangle rectangle.",
+  "Calculer au degré près l'angle CAE.",
+  "La droite perpendiculaire à (AB) passant par C coupe le segment [AB] en un point H.",
+  "On admet que l'angle CAB = 60°. Calculer CH au dixième près puis une valeur approchée au dixième près de l'aire du triangle ABC.",
+  "Calculer, s'ils existent, le ou les antécédent(s) de 7, -2 et -5 par la fonction f.",
+  "Pour quelles valeurs du réel x a-t-on f(x) < 0 ?",
+  "Dresser le tableau de variation de f puis celui de g. Sur quel(s) intervalle(s) g est-elle croissante et négative ?",
+  "Répondre aux questions suivantes à l'aide du graphique, en donnant précisément les arguments graphiques.",
+  "Les affirmations suivantes sont-elles vraies ? Pour tout x de [-4 ; 5], on a f(x) ≤ 2.",
+];
+
+/* ---------- usage examples: [French phrase, French example, English example] ---------- */
+const EXAMPLES = [
+["Calculer","Calculer f(2).","Calculate f(2)."],["Démontrer que…","Démontrer que le triangle ABC est rectangle.","Prove that triangle ABC is right-angled."],["Justifier","f est-elle croissante ? Justifier.","Is f increasing? Explain why."],["En déduire…","b) En déduire le tableau de signes de f.","b) Use your answer to a) to make the sign table of f."],["Résoudre","Résoudre l'équation 2x + 1 = 7.","Solve the equation 2x + 1 = 7."],["Déterminer","Déterminer le minimum de f.","Find the minimum of f."],
+["Compléter","Compléter le tableau de valeurs.","Fill in the table of values."],["Représenter / Tracer","Représenter la fonction f dans le repère.","Draw the function f on the axes."],["Dresser le tableau","Dresser le tableau de variation de f.","Make the variation table of f."],["Comparer","Comparer f(1) et g(1).","Compare f(1) and g(1)."],["Identifier","Identifier la courbe de f.","Find which curve is the graph of f."],["Donner sans justifier","Donner sans justifier le minimum de f.","Give the minimum of f, no explanation needed."],
+["au degré près","L'angle mesure 37° au degré près.","The angle is 37°, to the nearest degree."],["au dixième près","√7 ≈ 2,6 au dixième près.","√7 ≈ 2.6, to 1 decimal place."],["au centième près","√2 ≈ 1,41 au centième près.","√2 ≈ 1.41, to 2 decimal places."],["la valeur exacte","La valeur exacte de x est √2.","The exact value of x is √2."],["une valeur approchée","Une valeur approchée de √2 est 1,41.","An approximate value of √2 is 1.41."],
+["Est-il … ?","Le triangle est-il rectangle ?","Is the triangle right-angled?"],["Pour quelles valeurs de x … ?","Pour quelles valeurs de x a-t-on f(x) > 0 ?","For which x is f(x) > 0?"],["Combien de … ?","Combien de solutions a l'équation f(x) = 3 ?","How many solutions does f(x) = 3 have?"],["Sur quel(s) intervalle(s) … ?","Sur quel intervalle f est-elle croissante ?","On which interval is f increasing?"],["s'ils existent","Calculer, s'ils existent, les antécédents de −5.","Find the preimages of −5, if there are any."],
+["tel que","On cherche x tel que f(x) = 7.","We look for x such that f(x) = 7."],["On admet que","On admet que f(2) = 4.","Accept that f(2) = 4 (no need to prove it)."],["Pour tout x de [−4 ; 1]","Pour tout x de [−4 ; 1], f(x) < 3.","For every x in [−4 ; 1], f(x) < 3."],["à l'aide du graphique","À l'aide du graphique, lire f(1).","Using the graph, read f(1)."],["Les affirmations suivantes sont-elles vraies ?","Les affirmations suivantes sont-elles vraies ? a) f(0) = −2","Are the following statements true? a) f(0) = −2"],
+["un point de [AE]","D est un point de [AE].","D is a point on segment [AE]."],["la droite (AB)","La droite (AB) coupe la droite (CD).","Line AB crosses line CD."],["le segment [AB]","Le segment [AB] mesure 5 cm.","Segment AB is 5 cm long."],["perpendiculaire à (AB)","(CH) est perpendiculaire à (AB).","CH is perpendicular to AB."],["passant par C","la droite passant par C","the line going through C"],["coupe … en H","La droite coupe [AB] en H.","The line crosses [AB] at H."],["parallèle à","(BD) est parallèle à (CE).","BD is parallel to CE."],["rectangle en C","ACE est rectangle en C.","ACE is right-angled at C."],["l'aire","Calculer l'aire du triangle ABC.","Calculate the area of triangle ABC."],["une hauteur","[CH] est une hauteur du triangle.","[CH] is a height of the triangle."],
+["la fonction f définie sur [−4 ; 4]","Soit f la fonction définie sur [−4 ; 4] par f(x) = x² − 2.","Let f be the function defined on [−4 ; 4] by f(x) = x² − 2."],["l'image de 6 par f","L'image de 2 par f est f(2) = 2.","The image of 2 under f is f(2) = 2."],["un antécédent de 7","3 est un antécédent de 7, car f(3) = 7.","3 is a preimage of 7, because f(3) = 7."],["la courbe représentative","La courbe représentative de f est une parabole.","The graph of f is a parabola."],["le tableau de valeurs","Compléter le tableau de valeurs de f.","Fill in the table of values of f."],["le repère","Tracer la courbe dans le repère.","Draw the curve on the axes."],
+["le tableau de variation","Dresser le tableau de variation de f.","Make the variation table of f."],["le tableau de signes","Donner le tableau de signes de f(x).","Give the sign table of f(x)."],["croissante","f est croissante sur [0 ; 4].","f is increasing on [0 ; 4]."],["décroissante","f est décroissante sur [−4 ; 0].","f is decreasing on [−4 ; 0]."],["l'équation f(x) = 0","Résoudre l'équation f(x) = 0.","Solve the equation f(x) = 0."],["l'inéquation f(x) ≥ 7","Résoudre l'inéquation f(x) ≥ 7.","Solve the inequality f(x) ≥ 7."],
+["l'image de −1 par f","L'image de −1 par f est −1.","The image of −1 under f is −1."],["on remplace x par −1","On remplace x par −1 : f(−1) = (−1)² − 2.","We replace x with −1: f(−1) = (−1)² − 2."],["n'appartient pas à","6 n'appartient pas à [−4 ; 4].","6 is not in [−4 ; 4]."],["n'a pas d'image","6 n'a pas d'image par f.","6 has no image under f."],
+["On cherche x tel que f(x) = 7","On cherche x tel que f(x) = 7 : x² − 2 = 7.","We look for x such that f(x) = 7: x² − 2 = 7."],["les antécédents de 7 sont −3 et 3","Les antécédents de 7 par f sont 3 et −3.","The preimages of 7 under f are 3 and −3."],["n'a pas d'antécédent","−5 n'a pas d'antécédent par f.","−5 has no preimage under f."],["un seul antécédent","−2 a un seul antécédent : 0.","−2 has only one preimage: 0."],["car","f(x) ≥ −2 car x² ≥ 0.","f(x) ≥ −2 because x² ≥ 0."],["ou","x = 3 ou x = −3","x = 3 or x = −3"],
+["graphiquement","Graphiquement, f(1) = −1.","Using the graph, f(1) = −1."],["on lit","On lit f(2) = 4 sur le graphique.","We read f(2) = 4 on the graph."],["l'abscisse","L'abscisse du point A est 2.","The x-coordinate of point A is 2."],["l'ordonnée","L'ordonnée du point A est 4.","The y-coordinate of point A is 4."],["au-dessus de","Cf est au-dessus de Cg en x = 3.","Cf is above Cg at x = 3."],["au-dessous de","Cf est au-dessous de l'axe des abscisses.","Cf is below the x-axis."],["le point d'intersection","Le point d'intersection de Cf et Cg a pour abscisse 1.","The crossing point of Cf and Cg has x-coordinate 1."],["l'axe des abscisses","Cf coupe l'axe des abscisses en x = √2.","Cf crosses the x-axis at x = √2."],
+["le minimum","Le minimum de f est −2.","The minimum of f is −2."],["le maximum","Le maximum de f est 14.","The maximum of f is 14."],["atteint en x = 0","Le minimum −2 est atteint en x = 0.","The minimum −2 is reached at x = 0."],["atteint en","Le maximum est atteint en x = 4.","The maximum is reached at x = 4."],
+["a deux solutions","L'équation f(x) = 3 a deux solutions.","The equation f(x) = 3 has two solutions."],["la droite d'équation y = 3","La droite d'équation y = 3 coupe Cf deux fois.","The line y = 3 crosses Cf twice."],["coupe Cf en deux points","La droite y = 3 coupe Cf en deux points.","The line y = 3 crosses Cf at two points."],["l'ensemble des solutions S","L'ensemble des solutions est S = [3 ; 4].","The set of solutions is S = [3 ; 4]."],["supérieur ou égal à (≥)","f(x) ≥ 7 : f(x) est supérieur ou égal à 7.","f(x) ≥ 7: f(x) is greater than or equal to 7."],
+["vrai","Vrai : f(x) ≥ −2 pour tout x.","True: f(x) ≥ −2 for every x."],["faux","Faux : f(2) = 4 et 4 > 2.","False: f(2) = 4 and 4 > 2."],["un contre-exemple","2 est un contre-exemple.","2 is a counterexample."],["pour tout x","Pour tout x de [−4 ; 4], f(x) ≥ −2.","For every x in [−4 ; 4], f(x) ≥ −2."],["en effet","Vrai. En effet, x² ≥ 0.","True. Indeed, x² ≥ 0."],
+["On sait que…","On sait que AB = 5 cm.","We know that AB = 5 cm."],["Soit…","Soit n un nombre entier.","Let n be a whole number."],["l'énoncé","D'après l'énoncé, AB = 3 cm.","According to the question, AB = 3 cm."],["les données","J'écris les données de l'énoncé.","I write the facts given in the question."],["D'après l'énoncé,","D'après l'énoncé, (BD) // (CE).","According to the question, BD // CE."],
+["la propriété","On utilise la propriété des angles d'un triangle.","We use the property of the angles of a triangle."],["la définition","Par définition, un nombre pair s'écrit 2k.","By definition, an even number is written 2k."],["le théorème","D'après le théorème de Pythagore, …","By Pythagoras' theorem, …"],["si … alors …","Si un nombre est pair, alors il est divisible par 2.","If a number is even, then it is divisible by 2."],["d'après","D'après la réciproque du théorème de Pythagore, …","By the converse of Pythagoras' theorem, …"],
+["on calcule","On calcule AE² = 7,5² = 56,25.","We calculate AE² = 7.5² = 56.25."],["D'une part","D'une part : AE² = 56,25.","On one hand: AE² = 56.25."],["D'autre part","D'autre part : AC² + CE² = 56,25.","On the other hand: AC² + CE² = 56.25."],["On constate que","On constate que AE² = AC² + CE².","We notice that AE² = AC² + CE²."],["la vérification","Vérification : 3 × 5 + 5 = 20.","Check: 3 × 5 + 5 = 20."],
+["La solution est…","La solution de l'équation est 5.","The solution of the equation is 5."],["mesure","L'angle Ĉ mesure 70°.","Angle Ĉ measures 70°."],["est égal à","AE² est égal à 56,25.","AE² is equal to 56.25."],["n'est pas","Le triangle n'est pas rectangle.","The triangle is not right-angled."],["l'affirmation est fausse","Donc l'affirmation est fausse.","So the statement is false."],
+["Or,","On sait que n est pair. Or, un nombre pair s'écrit 2k.","We know n is even. Now, an even number is written 2k."],["On applique la règle :","On applique la règle : Ĉ = 180° − 50° − 60°.","We apply the rule: Ĉ = 180° − 50° − 60°."],["Donc,","Donc l'angle Ĉ mesure 70°.","Therefore angle Ĉ measures 70°."],["donc","x² = 9, donc x₁ = 3 et x₂ = −3.","x² = 9, so x₁ = 3 and x₂ = −3."],
+["image","L'image de 3 par f est 7.","The image of 3 under f is 7."],["antécédent","3 est un antécédent de 7.","3 is a preimage of 7."],["antécédents","Les antécédents de 7 sont 3 et −3.","The preimages of 7 are 3 and −3."],["solution","x = 5 est la solution.","x = 5 is the solution."],["solutions","L'équation a deux solutions.","The equation has two solutions."],["courbe","La courbe de f est une parabole.","The curve of f is a parabola."],["intervalle","f est croissante sur l'intervalle [0 ; 4].","f is increasing on the interval [0 ; 4]."],["triangle","Dans le triangle ACE, …","In triangle ACE, …"],["la réciproque","D'après la réciproque du théorème de Pythagore, …","By the converse of Pythagoras' theorem, …"],["la contraposée","D'après la contraposée du théorème de Pythagore, …","By the contrapositive of Pythagoras' theorem, …"],["un contre-exemple","f(2) = 4 > 2 : 2 est un contre-exemple.","f(2) = 4 > 2: 2 is a counterexample."],["alignés","Les points A, B, C sont alignés.","Points A, B, C are on the same line."],["le plus grand côté","Le plus grand côté est [AE].","The longest side is [AE]."],
+["valeur approchée","Une valeur approchée au dixième de √7 est 2,6.","An approximate value of √7 to 1 decimal place is 2.6."],["valeur exacte","La valeur exacte est √2.","The exact value is √2."],["au dixième","√7 ≈ 2,6 (au dixième).","√7 ≈ 2.6 (to 1 decimal place)."],["au centième","√2 ≈ 1,41 (au centième).","√2 ≈ 1.41 (to 2 decimal places)."],["virgule","2,5 se lit « deux virgule cinq ».","2,5 is read \"two point five\"."],
+["affirmations","Les affirmations suivantes sont-elles vraies ?","Are the following statements true?"],["définie sur","f est définie sur [−4 ; 4].","f is defined on [−4 ; 4]."],["équation","Résoudre l'équation f(x) = 0.","Solve the equation f(x) = 0."],["pour quelles valeurs","Pour quelles valeurs de x a-t-on f(x) = 0 ?","For which values of x is f(x) = 0?"],
+["remplace","On remplace x par 2 : f(2) = 2² − 2 = 2.","We replace x with 2: f(2) = 2² − 2 = 2."],["point","D est un point de [AE].","D is a point on segment [AE]."],["segment","Le segment [AB] mesure 5 cm.","Segment AB is 5 cm long."],["coupe","La droite coupe [AB] en H.","The line crosses [AB] at H."],["figure","Faire une figure au dos de la feuille.","Draw a diagram on the back of the sheet."],["angle","L'angle CAE mesure environ 37°.","Angle CAE is about 37°."],
+["graphique","À l'aide du graphique, lire f(2).","Using the graph, read f(2)."],["contre-exemple","f(2) = 4 > 2 : 2 est un contre-exemple.","f(2) = 4 > 2: 2 is a counterexample."],["f(x)","f(x) = x² − 2","f(x) = x² − 2"]
+];
+/* =================== STATE =================== */
+const today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const yesterday = () => { const d = new Date(Date.now() - 864e5); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+let P = store.get("progress", null);
+if (!P || typeof P !== "object" || !P.done) P = { done: {}, xp: 0, streak: 0, lastDay: "", day: "", dayXp: 0, mistakes: [] };
+if (!Array.isArray(P.mistakes)) P.mistakes = [];
+const GOAL = 40;
+const save = () => store.set("progress", P);
+const dayXp = () => P.day === today() ? P.dayXp : 0;
+const streakNow = () => (P.lastDay === today() || P.lastDay === yesterday()) ? P.streak : 0;
+function addXp(n) {
+  if (P.day !== today()) { P.day = today(); P.dayXp = 0; }
+  P.dayXp += n; P.xp += n;
+  if (P.lastDay !== today()) { P.streak = P.lastDay === yesterday() ? P.streak + 1 : 1; P.lastDay = today(); }
+  save();
+}
+let vSound = store.get("sound", true);
+
+/* =================== SOUND =================== */
+const SPK = `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>`;
+const LOCK = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/></svg>`;
+const FLAME = `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M12 2c.6 3.2-2.6 5.2-2.6 8.4a2.6 2.6 0 0 0 5.2 0c0-1-.4-1.8-.4-1.8 2.3 1.6 3.8 4 3.8 6.6a6 6 0 0 1-12 0C6 10.6 9.6 7 12 2z"/></svg>`;
+const canSpeak = (() => { try { return "speechSynthesis" in window; } catch (e) { return false; } })();
+function say(t, lang = "fr-FR") {
+  if (!canSpeak || !vSound || !t) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).replace(/[…\[\]]/g, " ").replace(/−/g, "moins ")); u.lang = lang; u.rate = 0.9; speechSynthesis.speak(u); } catch (e) {}
+}
+const sayBtn = (t, lang = "fr-FR") => canSpeak ? `<button class="vsay" data-say="${esc(t)}" data-lang="${lang}" aria-label="Listen">${SPK}</button>` : "";
+let actx = null;
+function chime(ok) {
+  if (!vSound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    (ok ? [660, 880] : [220, 180]).forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime + i * 0.12; o.type = ok ? "sine" : "triangle"; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2); o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + 0.22); });
+  } catch (e) {}
+}
+function wireSay(root) { root.querySelectorAll("[data-say]").forEach(b => b.onclick = ev => { ev.stopPropagation(); say(b.dataset.say, b.dataset.lang); }); }
+
+/* =================== HOVER TRANSLATIONS =================== */
+const nrm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u2019`\u00b4]/g, "'");
+const WORD_RE = /[A-Za-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff]+'?|\s+|[^\sA-Za-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff]/g;
+const isWord = t => /^[A-Za-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff]/.test(t);
+const SMALLW = new Set(["le", "la", "les", "l'", "un", "une", "de", "du", "des", "d'", "et", "ou", "en", "a", "que", "est", "sont", "sur", "par", "dans", "au", "on"]);
+let GKEYS = null, EXM = null;
+function exFor(id) {
+  if (!EXM) { EXM = new Map(); EXAMPLES.forEach(([fr, a, b]) => EXM.set((fr.match(WORD_RE) || []).filter(isWord).map(nrm).join(" "), [a, b])); }
+  return EXM.get(id) || null;
+}
+let EXL = null;
+function findEx(text) {
+  exFor("");
+  if (!EXL) EXL = [...EXM.entries()].map(([id, v]) => ({ w: id.split(" "), id, v })).filter(x => x.id).sort((p, q) => q.w.length - p.w.length);
+  const ws = (String(text).match(WORD_RE) || []).filter(isWord).map(nrm);
+  let small = null;
+  for (const x of EXL) {
+    for (let i = 0; i + x.w.length <= ws.length; i++) {
+      if (x.w.every((w, j) => ws[i + j] === w)) {
+        const fr = EXAMPLES.find(r => (r[0].match(WORD_RE) || []).filter(isWord).map(nrm).join(" ") === x.id)[0];
+        if (x.w.length === 1 && SMALLW.has(x.w[0])) { small = small || [fr, ...x.v]; break; }
+        return [fr, ...x.v];
+      }
+    }
+  }
+  return small;
+}
+function gkeys() {
+  if (GKEYS) return GKEYS;
+  const seen = new Set();
+  GKEYS = [...GLOSS_EXTRA, ...ALLWORDS.filter(w => /^[A-Za-z\u00c0-\u00ff' \-]+$/.test(w[0])), ...DICT].map(([fr, en]) => ({ w: (fr.match(WORD_RE) || []).filter(isWord).map(nrm), fr, en }))
+    .filter(k => { const id = k.w.join(" "); if (!k.w.length || seen.has(id)) return false; seen.add(id); return true; })
+    .map(k => ({ ...k, small: k.w.length === 1 && SMALLW.has(k.w[0]), ex: exFor(k.w.join(" ")) })).sort((a, b) => b.w.length - a.w.length);
+  return GKEYS;
+}
+const FRSW = new Set(["le", "la", "les", "l'", "est", "de", "du", "des", "que", "sont", "un", "une", "et", "pour", "sur", "par", "donc", "d'", "pas", "au", "dans", "avec", "il", "elle", "ou", "n'", "s'", "on", "en"]);
+const ENSW = new Set(["the", "is", "of", "and", "a", "to", "you", "it", "what", "which", "for", "with", "are", "at", "in", "be", "this", "that", "your", "we", "do", "how", "where", "only", "so", "under", "no", "has", "not", "one", "or"]);
+function isFrench(t) {
+  const ws = (String(t).match(/[A-Za-z\u00c0-\u00ff]+'?/g) || []).map(nrm);
+  let f = 0, e = 0; ws.forEach(w => { if (FRSW.has(w)) f++; if (ENSW.has(w)) e++; });
+  if (f !== e) return f > e;
+  if (/[\u00e9\u00e8\u00ea\u00e0\u00e7\u00f9\u00e2\u00ee\u00f4\u00fb]/i.test(t)) return true;
+  return ws.length > 0 && gkeys().some(k => k.w.length === 1 && !k.small && k.w[0] === ws[0]);
+}
+function glossF(text) {
+  const toks = String(text).match(WORD_RE) || [], wi = toks.map((t, i) => isWord(t) ? i : -1).filter(i => i >= 0), K = gkeys();
+  const out = []; let ti = 0, k = 0;
+  while (k < wi.length) {
+    let hit = null;
+    for (const d of K) { if (d.w.length > wi.length - k) continue; if (d.w.every((w, j) => nrm(toks[wi[k + j]]) === w)) { hit = d; break; } }
+    if (!hit) { k++; continue; }
+    const s0 = wi[k]; let e = wi[k + hit.w.length - 1];
+    if (hit.fr.endsWith(")") && toks[e + 1] === ")") e++;
+    out.push(esc(toks.slice(ti, s0).join("")));
+    out.push(`<span class="gl${hit.small ? " sm" : ""}" data-en="${esc(hit.en + (hit.ex && !hit.small ? "\nExample: " + hit.ex[0] : ""))}" tabindex="0">${esc(toks.slice(s0, e + 1).join(""))}</span>`);
+    ti = e + 1; k += hit.w.length;
+  }
+  out.push(esc(toks.slice(ti).join("")));
+  return out.join("");
+}
+const gloss = t => isFrench(t) ? glossF(t) : esc(t);
+
+/* =================== NAV =================== */
+let view = { name: "home" };
+function go(v) {
+  view = v; VL = null;
+  document.querySelectorAll(".mnav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === (v.name === "course" ? "home" : v.name)));
+  if (v.name === "home") renderHome();
+  else if (v.name === "course") renderCourse(v.id);
+  else if (v.name === "decoder") renderDecoder();
+  else if (v.name === "glossary") renderGlossary();
+  else if (v.name === "all") renderAll();
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll(".mnav button").forEach(b => b.onclick = () => go({ name: b.dataset.v }));
+
+function courseStats(c) { const L = allLessons(c); return [L.filter(l => P.done[l.key]).length, L.length]; }
+function statsBar() {
+  const dx = dayXp(), pct = Math.min(100, Math.round(100 * dx / GOAL)), st = streakNow();
+  return `<div class="mstats">
+    <div class="mstat streak${P.lastDay === today() ? " lit" : ""}">${FLAME}<b>${st}</b><span>day${st === 1 ? "" : "s"} streak</span></div>
+    <div class="mstat"><b>${P.xp}</b><span>XP total</span></div>
+    <div class="mstat goal"><div class="ring" style="--p:${pct}"><span>${dx}/${GOAL}</span></div><span>today's goal</span></div>
+  </div>`;
+}
+const courseCard = (c, n) => { const [d, t] = courseStats(c); return `<button class="mcourse${c.track === "bonus" ? " bonus" : ""}" data-c="${c.id}" style="--rc:${c.color}">
+      <span class="mnum">${n}</span><span class="mct"><b>${c.title}</b><span class="vfr">${c.fr}</span><span class="small">${c.blurb}</span></span>
+      <span class="mbar"><i style="width:${Math.round(100 * d / t)}%"></i></span><span class="small">${d}/${t} lessons</span></button>`; };
+function renderHome() {
+  const main = COURSES.filter(c => c.track === "main"), bonus = COURSES.filter(c => c.track === "bonus");
+  const [md, mt] = main.reduce((acc, c) => { const [d, t] = courseStats(c); return [acc[0] + d, acc[1] + t]; }, [0, 0]);
+  const html = `${statsBar()}
+    <div class="mtrack main"><div class="mtrackhead"><span class="mtag">Main track</span><h2>Functions</h2><p class="small">For your next tests. Do these first, in order: 1 → 2 → 3. (${md}/${mt} lessons done)</p></div>
+      <div class="mcourses">${main.map((c, i) => courseCard(c, i + 1)).join("")}</div></div>
+    <div class="mtrack bonus"><div class="mtrackhead"><span class="mtag">Bonus · only if you have time</span><h2>Geometry and proofs</h2><p class="small">Thalès, Pythagore and the proof pyramid: how to organise a proof (I know → rule → calculate → conclude).</p></div>
+      <div class="mcourses">${bonus.map((c, i) => courseCard(c, "B" + (i + 1))).join("")}</div></div>
+    <h2 class="msec">Practice</h2>
+    <div class="mtools">
+      <button class="mtool" id="goMist"><b>Fix my mistakes</b><span class="small">${P.mistakes.length ? `${P.mistakes.length} question${P.mistakes.length > 1 ? "s" : ""} to review` : "No mistakes saved yet"}</span></button>
+      <button class="mtool" id="goMix"><b>Mixed practice</b><span class="small">8 questions from lessons you finished</span></button>
+      <button class="mtool" data-v="decoder"><b>Instruction decoder</b><span class="small">Translate a real question, word by word</span></button>
+      <button class="mtool" data-v="glossary"><b>Glossary</b><span class="small">Every word, with sound</span></button>
+    </div>
+    <div class="mfoot">${canSpeak ? `<label class="small"><input type="checkbox" id="snd" ${vSound ? "checked" : ""}> Sound and French pronunciation</label>` : ""}
+      <button class="btn" id="mReset">Reset all progress</button></div>`;
+  $("#stage").innerHTML = html;
+  $("#stage").querySelectorAll("[data-c]").forEach(b => b.onclick = () => go({ name: "course", id: b.dataset.c }));
+  $("#stage").querySelectorAll(".mtool[data-v]").forEach(b => b.onclick = () => go({ name: b.dataset.v }));
+  $("#goMist").onclick = () => { if (P.mistakes.length) startSpecial("mistakes"); };
+  $("#goMix").onclick = () => startSpecial("mix");
+  const s = $("#snd"); if (s) s.onchange = () => { vSound = s.checked; store.set("sound", vSound); };
+  const r = $("#mReset"); r.onclick = () => { if (r.dataset.sure) { P = { done: {}, xp: 0, streak: 0, lastDay: "", day: "", dayXp: 0, mistakes: [] }; save(); renderHome(); } else { r.dataset.sure = 1; r.textContent = "Click again to confirm"; } };
+}
+function renderCourse(id) {
+  const c = COURSES.find(x => x.id === id), L = allLessons(c);
+  const firstOpen = L.findIndex(l => !P.done[l.key]);
+  let html = `<div class="mback"><button class="btn" id="back">← Courses</button><div><span class="mtag${c.track === "bonus" ? " b" : ""}">${c.track === "bonus" ? "Bonus · geometry and proofs" : "Main track · functions"}</span><h2 style="color:${c.color}">${c.title}</h2><span class="vfr">${c.fr}</span></div></div>`;
+  if (c.id === "reason") {
+    const s = {}; UNIT_ORDER.forEach(u => { const ls = c.units[UNIT_ORDER.indexOf(u)].lessons.filter(l => !l.bridge); s[u] = [ls.filter(l => P.done[l.key]).length, ls.length]; });
+    html += `<div class="vhead"><div style="width:200px">${pyramidHTML(s, { mini: true, foot: "Your pyramid" })}</div><div class="vstats stack" style="gap:8px"><p class="small">On each floor, first understand <b>the idea in English</b><span class="tagEN">EN</span>, then learn <b>how to say it in French</b><span class="tagFR">FR</span>. Between floors, a <b>bridge</b> teaches the linking words.</p>
+      <div class="vchain">${UNIT_ORDER.map((u, i) => `<span class="vc" style="--rc:var(--r-${u})">${LV[u].en}</span>${i < 3 ? `<span class="va">${esc(BRIDGES[i].enw)} →</span>` : ""}`).join("")}</div></div></div>`;
+  }
+  html += `<div class="vpath">`;
+  let n = 0, idx = 0;
+  c.units.forEach(u => {
+    const col = u.color || c.color;
+    html += `<div class="vunit" style="--rc:${col}"><h3>${esc(u.title)} · <span class="vfr">${esc(u.fr)}</span></h3><p style="font-size:.92rem">${esc(u.sub)}</p></div>`;
+    u.lessons.forEach(l => {
+      const i = idx++, done = !!P.done[l.key], open = firstOpen < 0 || i <= firstOpen, cur = i === firstOpen;
+      const x = [0, 56, 0, -56][n++ % 4];
+      if (l.bridge != null) {
+        const b = BRIDGES[l.bridge];
+        html += `<div class="vstep" style="--x:${x / 2}px"><button class="vbridge${done ? " done" : ""}${cur ? " current" : ""}" data-l="${l.id}" ${open ? "" : "disabled"} style="--rc:var(--r-${b.to})"><span class="small">Bridge ${LV[b.from].n} → ${LV[b.to].n}</span><span class="vbw">${open ? `${esc(b.enw)} <span class="small">=</span> ${esc(b.w)}` : LOCK}</span>${done ? `<span class="small">✓</span>` : ""}</button></div>`;
+      } else {
+        html += `<div class="vstep" style="--x:${x}px"><button class="vnode${done ? " done" : ""}${cur ? " current" : ""}${open ? "" : " locked"}" data-l="${l.id}" ${open ? "" : "disabled"} style="--rc:${col}" aria-label="${esc(l.t)}">${done ? "✓" : open ? l.glyph : LOCK}</button><div class="vlbl">${esc(l.t)}${cur ? `<span class="vgo">Start</span>` : ""}</div></div>`;
+      }
+    });
+  });
+  html += `</div>`;
+  $("#stage").innerHTML = html;
+  $("#back").onclick = () => go({ name: "home" });
+  $("#stage").querySelectorAll("[data-l]").forEach(b => b.onclick = () => startLesson(L.find(l => l.id === b.dataset.l)));
+}
+
+/* =================== LESSON ENGINE =================== */
+let VL = null;
+function startLesson(l) { VL = { l, mode: "lesson", queue: l.gen(), pos: 0, hearts: 3, xp: 0, mistakes: 0, requeued: new Set(), state: {}, phase: "ask" }; renderQ(); }
+function startSpecial(kind) {
+  let qs = [];
+  if (kind === "mistakes") qs = pick(P.mistakes, 8).map(q => JSON.parse(JSON.stringify(q)));
+  else {
+    const doneL = COURSES.flatMap(allLessons).filter(l => P.done[l.key]);
+    const src = doneL.length ? doneL : [COURSE_A.units[0].lessons[0], COURSE_B.units[0].lessons[0]];
+    const pool = shuffle(src).slice(0, 6).flatMap(l => l.gen().filter(q => !INFO.includes(q.type)));
+    qs = pick(pool, 8);
+  }
+  if (!qs.length) return;
+  VL = { l: { t: kind === "mistakes" ? "Fix my mistakes" : "Mixed practice", key: null }, mode: kind, queue: qs, pos: 0, hearts: 5, xp: 0, mistakes: 0, requeued: new Set(), state: {}, phase: "ask" };
+  renderQ();
+}
+const INFO = ["info", "words", "idea", "bridge", "chain"];
+const curQ = () => VL.queue[VL.pos];
+function qBody(q) {
+  if (q.type === "write") return `<div class="vq"><h3>${q.en ? "Write this in French" : "Answer in French"}</h3>
+      <div class="wprompt">${q.en ? `<span class="tagEN">EN</span> "${esc(q.en)}"` : `<span class="tagFR">FR</span> ${glossF(q.fr)}${q.enQ ? `<span class="small" style="display:block;margin-top:4px">${esc(q.enQ)}</span>` : ""}`}</div>
+      <div class="wparts">${q.parts.map((p, i) => `<div class="wpart">${p.role ? roleTag(p.role) : p.label ? `<span class="wlab">${esc(p.label)}</span>` : ""}<textarea data-i="${i}" rows="${q.parts.length > 1 ? 1 : 2}" placeholder="${esc(p.starter || "Type the French sentence…")}" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><div class="wres" id="wres${i}"></div></div>`).join("")}</div>
+      <div class="wkeys">${(q.hints || []).map(h => `<button class="vtile wh" data-ins="${esc(h)}">${glossF(h)}</button>`).join("")}${["²", "−", "√", "≈", "≤", "≥", "≠", "∪", "[ ]", "₁", "₂", "°", "é", "è", "à", "ç"].map(c => `<button class="vtile wsym" data-ins="${c}">${c}</button>`).join("")}</div></div>`;
+  if (q.type === "info") return `<div class="vq"><div class="vnew">${esc(q.badge || "Tip")}</div><h2>${esc(q.title)}</h2>${q.html}</div>`;
+  if (q.type === "words") return `<div class="vq"><div class="vnew">${esc(q.badge || "New words")} <span class="tagFR">FR</span></div><h2>${esc(q.title)}</h2>${q.intro ? `<p>${q.intro}</p>` : ""}
+    <div class="vwords">${q.words.map(w => { const x = exFor((w[0].match(WORD_RE) || []).filter(isWord).map(nrm).join(" ")); return `<div class="vword">${sayBtn(w[0])}<div><b>${esc(w[0])}</b><span class="small" style="display:block">${esc(w[1])}</span>${x ? `<span class="wex">e.g. <span class="wexfr">${glossF(x[0])}</span> <span class="small">(${esc(x[1])})</span></span>` : ""}</div></div>`; }).join("")}</div></div>`;
+  if (q.type === "idea") { const L = LOGIC[q.u]; return `<div class="vq"><div class="vnew">The idea <span class="tagEN">EN</span></div><h2 style="color:var(--r-${q.u})">Floor ${LV[q.u].n} · ${LV[q.u].en}</h2><p style="font-size:1.1rem">${L.idea}</p><p class="small">${L.why}</p><div class="vwords">${L.ex.map(e => `<div class="vword">${sayBtn(e, "en-GB")}<div>${esc(e)}</div></div>`).join("")}</div></div>`; }
+  if (q.type === "bridge") { const b = BRIDGES[q.b]; return `<div class="vq"><div class="vnew">The bridge</div><h2>How do you get to the next floor?</h2>
+      <div class="vclimb"><div class="vlev" style="--rc:var(--r-${b.to})">${lvLabel(b.to)}</div><div class="vlink"><span>↑</span><b>${esc(b.enw)}</b><span class="small">=</span><b>${esc(b.w)}</b>${sayBtn(b.w)}</div><div class="vlev" style="--rc:var(--r-${b.from})">${lvLabel(b.from)}</div></div>
+      <div class="vcard"><span class="tagEN">EN</span> <b>"${esc(b.enw)}"</b> ${b.role}<div style="margin-top:6px">${esc(b.exEn)}</div></div>
+      <div class="vcard"><span class="tagFR">FR</span> ${esc(b.note)}<div style="margin-top:6px">${esc(b.ex[0])}<mark class="vmark">${esc(b.ex[1])}</mark>${esc(b.ex[2])}</div></div></div>`; }
+  if (q.type === "chain") return `<div class="vq"><div class="vnew">The whole chain</div><h2>Four floors, three bridges</h2>
+      <div class="vclimb">${[...UNIT_ORDER].reverse().map((u, k) => `<div class="vlev" style="--rc:var(--r-${u})">${lvLabel(u)} <span class="vfr" style="font-weight:400">· ${LV[u].fr}</span></div>${k < 3 ? `<div class="vlink"><span>↑</span><b>${esc(BRIDGES[2 - k].enw)}</b><span class="small">=</span><b>${esc(BRIDGES[2 - k].w)}</b></div>` : ""}`).join("")}</div>
+      <p>First, put two proofs in order <b>in English</b>. Then do the same <b>in French</b>.</p></div>`;
+  if (q.type === "mcq") return `<div class="vq"><h3>${esc(q.prompt)}</h3>${q.big ? `<div class="vbigrow">${/[a-zé]/i.test(q.big) && !q.big.includes("=") || q.speak ? sayBtn(q.speak || q.big) : ""}<span class="vbig${q.big.length > 40 ? " long" : ""}">${gloss(q.big)}</span></div>` : ""}
+      <div class="vopts">${q.options.map((o, k) => `<button class="vopt" data-k="${k}"><span class="vkey">${k + 1}</span><span>${gloss(o)}</span></button>`).join("")}</div></div>`;
+  if (q.type === "match") { const L = shuffle(q.pairs.map((p, k) => k)), R = shuffle(q.pairs.map((p, k) => k));
+    return `<div class="vq"><h3>Match the pairs</h3><div class="vmatch"><div class="vopts">${L.map(k => `<button class="vopt vm" data-side="l" data-k="${k}">${glossF(q.pairs[k][0])}</button>`).join("")}</div><div class="vopts">${R.map(k => `<button class="vopt vm" data-side="r" data-k="${k}">${esc(q.pairs[k][1])}</button>`).join("")}</div></div></div>`; }
+  if (q.type === "blank") return `<div class="vq"><h3>Complete the French sentence</h3><p class="small">"${esc(q.en)}"</p><p class="vsent">${glossF(q.before)}<span class="vgap" id="vgap">&nbsp;</span>${glossF(q.after)}</p>
+      <div class="vtiles">${q.options.map((o, k) => `<button class="vtile" data-k="${k}">${glossF(o)}</button>`).join("")}</div></div>`;
+  if (q.type === "build") return `<div class="vq"><h3>Write this in French</h3><p class="vbig" style="font-size:1.25rem">"${esc(q.en)}"</p><div class="vline vtiles" id="vline"></div><div class="vtiles" id="vbank">${q.tiles.map((t, k) => `<button class="vtile" data-k="${k}">${glossF(t)}</button>`).join("")}</div></div>`;
+  if (q.type === "tap") return `<div class="vq"><h3>${esc(q.prompt)}</h3><div class="vtap">${q.tokens.map((t, k) => `<button class="vtile" data-k="${k}">${glossF(t)}</button>`).join("")}</div><p class="small">Hover over the words to see their meaning.</p>${sayBtn(q.tokens.join(" "))}</div>`;
+  if (q.type === "level") return `<div class="vq"><h3>Which floor of the pyramid does this belong on?</h3><div class="vbigrow">${sayBtn(q.phrase, q.lang)}<span class="vbig" style="font-size:1.3rem">${gloss(q.phrase)}</span></div>${q.sub ? `<p class="small">${esc(q.sub)}</p>` : ""}<div id="vlevel">${pyramidHTML(null, { click: true, sel: "__none" })}</div></div>`;
+  if (q.type === "order") return `<div class="vq"><h3>${esc(q.prompt)}</h3><p class="small">Tap the sentences in the right order.</p><div class="vline vorder" id="vline"></div><div class="vopts" id="vbank">${q.tiles.map(k => `<button class="vopt" data-k="${k}"><span>${gloss(q.items[k][0])}</span></button>`).join("")}</div></div>`;
+  return "";
+}
+function qExample(q) {
+  const texts = [];
+  if (q.type === "mcq") texts.push(q.big, q.answer, ...q.options);
+  if (q.type === "blank") texts.push(q.answer, q.before + q.after);
+  if (q.type === "build") texts.push(q.answer.join(" "));
+  if (q.type === "tap") texts.push(...q.answer.map(k => q.tokens[k]), q.tokens.join(" "));
+  if (q.type === "level") texts.push(q.phrase);
+  if (q.type === "match") texts.push(...q.pairs.map(p => p[0]));
+  if (q.type === "order") texts.push(...q.items.map(x => x[0]));
+  if (q.type === "write") texts.push(...(q.hints || []), ...q.parts.map(p => p.variants[0]), q.fr || "");
+  for (const t of texts) { if (!t || !isFrench(t)) continue; const r = findEx(t); if (r) return r; }
+  return null;
+}
+const UNITEX = new Map();
+function unitExample(u) {
+  if (!u) return null;
+  if (UNITEX.has(u)) return UNITEX.get(u);
+  let r = null;
+  const fl = Object.keys(LV).find(k => u.title && u.title.startsWith("Floor " + LV[k].n));
+  if (fl) { const w = VU[fl].words[0]; const x = exFor((w[0].match(WORD_RE) || []).filter(isWord).map(nrm).join(" ")); if (x) r = [w[0], ...x]; }
+  if (!r) for (const l of u.lessons) { let qs = []; try { qs = l.gen(); } catch (err) {} for (const q of qs) { const ws = q.type === "words" ? q.words.map(w => w[0]) : []; for (const w of ws) { const x = findEx(w); if (x) { r = x; break; } } if (r) break; const y = qExample(q); if (y) { r = y; break; } } if (r) break; }
+  UNITEX.set(u, r); return r;
+}
+const exChip = q => { const r = qExample(q) || (VL && VL.l && unitExample(VL.l.unit)); return r ? `<button type="button" class="exhint" aria-label="Show an example">Example<span class="exbox" role="tooltip"><span class="small">Where to use <b>${esc(r[0])}</b></span><b>${esc(r[1])}</b><i>${esc(r[2])}</i></span></button>` : ""; };
+function renderQ() {
+  const q = curQ(); if (!q) return finishLesson();
+  VL.state = { sel: null, built: [], picked: new Set(), matched: new Set(), left: null }; VL.phase = "ask";
+  const pct = Math.round(100 * VL.pos / VL.queue.length), info = INFO.includes(q.type);
+  $("#stage").innerHTML = `<div class="vles">
+    <div class="vbar"><button class="vx" id="vquit" aria-label="Quit">✕</button><button class="vx" id="vprev" aria-label="Previous question" ${VL.pos ? "" : "disabled"}>←</button><div class="vprog"><i style="width:${pct}%"></i></div><span class="vhearts">♥ ${VL.hearts}</span></div>
+    ${info ? "" : exChip(q)}${qBody(q)}
+    <div class="vfoot" id="vfoot"><div id="vfb"></div><button class="vbtn" id="vcheck" ${info || q.type === "match" ? "" : "disabled"}>${info ? "Continue" : q.type === "match" ? "Skip" : "Check"}</button></div></div>`;
+  wireQ(q, info);
+  if (q.speak) say(q.speak);
+}
+function wireQ(q, info) {
+  const st = VL.state, chk = $("#vcheck"), S = $("#stage");
+  $("#vquit").onclick = () => go(view.name === "course" || view.name === "all" ? view : { name: "home" });
+  $("#vprev").onclick = () => { if (VL.pos > 0) { VL.pos--; renderQ(); } };
+  const ch = S.querySelector(".exhint"); if (ch) ch.onclick = () => ch.classList.toggle("open");
+  wireSay(S);
+  if (info) { chk.onclick = () => { VL.pos++; renderQ(); }; return; }
+  if (q.type === "mcq") S.querySelectorAll(".vopt").forEach(b => b.onclick = () => { if (VL.phase !== "ask") return; S.querySelectorAll(".vopt").forEach(x => x.classList.remove("sel")); b.classList.add("sel"); st.sel = q.options[+b.dataset.k]; chk.disabled = false; });
+  if (q.type === "blank") S.querySelectorAll(".vtile").forEach(b => b.onclick = () => { if (VL.phase !== "ask") return; S.querySelectorAll(".vtile").forEach(x => x.classList.remove("sel")); b.classList.add("sel"); st.sel = q.options[+b.dataset.k]; $("#vgap").textContent = st.sel; chk.disabled = false; });
+  if (q.type === "tap") S.querySelectorAll(".vtap .vtile").forEach(b => b.onclick = () => { if (VL.phase !== "ask") return; const k = +b.dataset.k; st.picked.has(k) ? st.picked.delete(k) : st.picked.add(k); b.classList.toggle("sel"); chk.disabled = st.picked.size === 0; say(q.tokens[k]); });
+  if (q.type === "build" || q.type === "order") {
+    const line = $("#vline"), bank = $("#vbank"), sync = () => { chk.disabled = st.built.length === 0; };
+    bank.querySelectorAll("button").forEach(b => b.onclick = () => {
+      if (VL.phase !== "ask" || b.classList.contains("gone")) return;
+      const k = +b.dataset.k; st.built.push(k); b.classList.add("gone");
+      const t = document.createElement("button"); t.className = b.className.replace(" gone", ""); t.innerHTML = b.innerHTML;
+      if (q.type === "order") t.insertAdjacentHTML("afterbegin", `<span class="vkey">${st.built.length}</span>`);
+      t.onclick = () => { if (VL.phase !== "ask") return; st.built = st.built.filter(x => x !== k); t.remove(); b.classList.remove("gone"); line.querySelectorAll(".vkey").forEach((s, n) => { s.textContent = n + 1; }); sync(); };
+      line.appendChild(t); sync();
+      if (q.type === "build") say(q.tiles[k]);
+    });
+  }
+  if (q.type === "write") {
+    const tas = [...S.querySelectorAll(".wpart textarea")]; let focus = tas[0];
+    const sync = () => { chk.disabled = !tas.some(t => t.value.trim()); };
+    tas.forEach(t => { t.addEventListener("focus", () => { focus = t; }); t.addEventListener("input", sync); t.addEventListener("keydown", ev => { if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); ev.stopPropagation(); const nx = tas[tas.indexOf(t) + 1]; if (nx) nx.focus(); else if (!chk.disabled) chk.click(); } }); });
+    S.querySelectorAll(".wkeys button").forEach(b => b.onclick = () => {
+      if (VL.phase !== "ask") return;
+      let ins = b.dataset.ins, caret; const t = focus, a = t.selectionStart ?? t.value.length, z = t.selectionEnd ?? a;
+      if (ins === "[ ]") { ins = "[]"; caret = a + 1; } else if (b.classList.contains("wh")) { const before = t.value.slice(0, a); if (before && !/\s$/.test(before)) ins = " " + ins; ins += " "; say(b.dataset.ins); }
+      t.value = t.value.slice(0, a) + ins + t.value.slice(z); caret = caret ?? a + ins.length; t.focus(); t.setSelectionRange(caret, caret); sync();
+    });
+    setTimeout(() => tas[0] && tas[0].focus(), 50);
+    chk.onclick = () => {
+      if (VL.phase !== "ask") return next();
+      let anyClose = false, allOk = true;
+      q.parts.forEach((p, i) => {
+        const r = gradePart(tas[i].value, p); tas[i].readOnly = true;
+        if (r.status === "miss") allOk = false; if (r.status === "close") anyClose = true;
+        $("#wres" + i).innerHTML = r.status === "ok" ? `<span class="wok">✓ Correct${r.exact ? "" : ". Exact spelling:"}</span>${r.exact ? "" : `<span class="wmodel">${r.diff}</span>`}`
+          : r.status === "close" ? `<span class="wclose">≈ Accepted, small mistakes. Correct version:</span><span class="wmodel">${r.diff}</span>`
+          : `<span class="wmiss">✗ Not quite. Model answer:</span><span class="wmodel">${r.diff}</span>`;
+        $("#wres" + i).parentElement.classList.add("w-" + r.status);
+      });
+      answer(allOk, "Look at the corrections above: the highlighted words are the ones you missed.", allOk && anyClose ? "Accepted. Check the small corrections above." : "");
+    };
+    return;
+  }
+  if (q.type === "level") $("#vlevel").querySelectorAll(".lv").forEach(b => b.onclick = () => { if (VL.phase !== "ask") return; st.sel = b.dataset.r; $("#vlevel").innerHTML = pyramidHTML(null, { click: true, sel: st.sel }); wireQ(q, false); chk.disabled = false; });
+  if (q.type === "match") {
+    chk.onclick = () => { if (VL.phase === "ask") answer(false, q.pairs.map(p => `${p[0]} = ${p[1]}`).join(" · ")); else next(); };
+    S.querySelectorAll(".vm").forEach(b => b.onclick = () => {
+      if (VL.phase !== "ask" || b.classList.contains("good")) return;
+      const side = b.dataset.side, k = +b.dataset.k;
+      if (side === "l") say(q.pairs[k][0]);
+      if (!st.left || st.left.side === side) { S.querySelectorAll(`.vm[data-side="${side}"]`).forEach(x => x.classList.remove("sel")); b.classList.add("sel"); st.left = { side, k, el: b }; return; }
+      if (st.left.k === k) { b.classList.add("good"); st.left.el.classList.remove("sel"); st.left.el.classList.add("good"); st.matched.add(k); st.left = null; chime(true); if (st.matched.size === q.pairs.length) answer(true); }
+      else { const a = st.left.el; a.classList.remove("sel"); a.classList.add("bad", "shake"); b.classList.add("bad", "shake"); st.left = null; VL.mistakes++; chime(false); setTimeout(() => { a.classList.remove("bad", "shake"); b.classList.remove("bad", "shake"); }, 600); }
+    });
+    return;
+  }
+  chk.onclick = () => {
+    if (VL.phase !== "ask") return next();
+    let ok = false, sol = "";
+    if (q.type === "mcq") { ok = st.sel === q.answer; sol = q.answer; if (q.speakAnswer) say(q.answer); }
+    if (q.type === "blank") { ok = st.sel === q.answer; sol = q.before + q.answer + q.after; say(sol); }
+    if (q.type === "build") { ok = st.built.map(k => q.tiles[k]).join(" ") === q.answer.join(" "); sol = q.answer.join(" "); say(sol); }
+    if (q.type === "tap") {
+      ok = st.picked.size === q.answer.length && q.answer.every(k => st.picked.has(k));
+      sol = q.answer.map(k => q.tokens[k]).join(" + ") + (q.en ? ` — "${q.en}"` : "");
+      S.querySelectorAll(".vtap .vtile").forEach(b => { const k = +b.dataset.k; if (q.answer.includes(k)) b.classList.add("good"); else if (st.picked.has(k)) b.classList.add("bad"); });
+    }
+    if (q.type === "level") { ok = st.sel === q.answer; sol = `Floor ${LV[q.answer].n}: ${LV[q.answer].en} (${LV[q.answer].fr})`; $("#vlevel").innerHTML = pyramidHTML(null, { click: true, sel: q.answer }); }
+    if (q.type === "order") {
+      ok = st.built.length === q.items.length && st.built.every((k, n) => k === n);
+      sol = "Follow the bridges: start → Now / Or → We apply / On applique → Therefore / Donc";
+      $("#vline").innerHTML = q.items.map(x => `<div class="vopt" style="cursor:default">${x[2] ? roleTag(x[2]) : ""}<span>${gloss(x[0])}</span>${x[1] ? `<span class="small" style="flex-basis:100%">${esc(x[1])}</span>` : ""}</div>`).join("");
+    }
+    answer(ok, sol);
+  };
+}
+const PRAISE = ["Great!", "Excellent!", "Perfect!", "Nice one!", "Bravo !", "Super !"];
+function answer(ok, sol, note) {
+  VL.phase = "done"; const q = curQ();
+  chime(ok);
+  const key = JSON.stringify(q);
+  if (ok) {
+    VL.xp += 2;
+    if (VL.mode === "mistakes") P.mistakes = P.mistakes.filter(m => JSON.stringify(m) !== key);
+  } else {
+    VL.hearts--; VL.mistakes++;
+    if (q.type !== "match" && !P.mistakes.some(m => JSON.stringify(m) === key)) { P.mistakes.push(JSON.parse(key)); if (P.mistakes.length > 40) P.mistakes.shift(); }
+    if (!VL.requeued.has(VL.pos) && q.type !== "match") { VL.requeued.add(VL.queue.length); VL.queue.push(q); }
+  }
+  save();
+  $("#vfoot").classList.add(ok ? "good" : "bad");
+  $("#vfb").innerHTML = (ok ? `<b class="vfbt">${PRAISE[Math.floor(Math.random() * PRAISE.length)]}</b>` : `<b class="vfbt">${q.type === "write" ? "Not yet" : "Correct answer:"}</b><div>${esc(sol)}</div>`) + (note ? `<div class="vexp">${esc(note)}</div>` : "") + (q.explain ? `<div class="vexp">${esc(q.explain)}</div>` : "");
+  const chk = $("#vcheck"); chk.disabled = false; chk.textContent = "Continue"; chk.classList.toggle("red", !ok); chk.onclick = next; chk.focus();
+  $("#stage").querySelector(".vhearts").textContent = "♥ " + Math.max(0, VL.hearts);
+}
+function next() {
+  if (VL.hearts <= 0) {
+    const l = VL.l, mode = VL.mode;
+    $("#stage").innerHTML = `<div class="vles vend"><h2>Out of hearts!</h2><p>That's fine: mistakes are how we learn. Your mistakes are saved in "Fix my mistakes".</p>
+      <div class="actions" style="justify-content:center"><button class="vbtn" id="vagain">Try again</button><button class="btn" id="vback">Back</button></div></div>`;
+    $("#vagain").onclick = () => mode === "lesson" ? startLesson(l) : startSpecial(mode);
+    $("#vback").onclick = () => go(view.name === "course" ? view : { name: "home" });
+    return;
+  }
+  VL.pos++; renderQ();
+}
+function finishLesson() {
+  const perfect = VL.mistakes === 0, gain = 10 + VL.xp + (perfect ? 5 : 0);
+  if (VL.mode === "lesson") P.done[VL.l.key] = true;
+  addXp(gain); chime(true);
+  let nextL = null;
+  if (VL.mode === "lesson") { const L = allLessons(VL.l.course); nextL = L.find(l => !P.done[l.key]); }
+  const dx = dayXp();
+  $("#stage").innerHTML = `<div class="vles vend">
+    <div class="vstamp">${perfect ? "Flawless!" : "Lesson complete!"}</div>
+    <div class="vendstats"><div><b>+${gain}</b><span>XP</span></div><div><b>${VL.mistakes}</b><span>mistakes</span></div><div><b>${streakNow()}</b><span>day streak</span></div></div>
+    <p class="small">${dx >= GOAL ? "Daily goal reached! 🎯".replace(" 🎯", "") : `${GOAL - dx} XP left for today's goal.`}</p>
+    <div class="actions" style="justify-content:center">${nextL ? `<button class="vbtn" id="vnext">Next lesson</button>` : ""}<button class="btn" id="vback">${VL.mode === "lesson" ? "Back to the course" : "Home"}</button></div></div>`;
+  const nb = $("#vnext"); if (nb) nb.onclick = () => startLesson(nextL);
+  $("#vback").onclick = () => go(view.name === "all" ? view : VL && VL.mode === "lesson" ? { name: "course", id: VL.l.course.id } : { name: "home" });
+}
+document.addEventListener("keydown", ev => {
+  if (!VL) return; const q = curQ(); if (!q) return;
+  if (ev.key === "Enter") { const c = $("#vcheck"); if (c && !c.disabled) { ev.preventDefault(); c.click(); } }
+  if (q.type === "mcq" && /^[1-4]$/.test(ev.key) && VL.phase === "ask") { const b = $("#stage").querySelector(`.vopt[data-k="${+ev.key - 1}"]`); if (b) b.click(); }
+});
+
+/* =================== LENIENT MARKING =================== */
+const normW = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u2019`\u00b4]/g, "'").replace(/[\u2212\u2013\u2014]/g, "-").replace(/\u00b2/g, "2").replace(/\u2081/g, "1").replace(/\u2082/g, "2").replace(/\^/g, "")
+  .replace(/(\d)[.,](\d)/g, "$1#$2").replace(/[.;:!?\u00ab\u00bb",]/g, " ").replace(/\s+/g, " ").trim();
+const cmpS = s => normW(s).replace(/\s+/g, "");
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) { const cur = [i]; for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = cur; }
+  return prev[n];
+}
+const simR = (a, b) => { a = cmpS(a); b = cmpS(b); return (!a && !b) ? 1 : 1 - lev(a, b) / Math.max(a.length, b.length); };
+function gradePart(ans, p) {
+  let best = -1, model = p.variants[0];
+  p.variants.forEach(v => { const r = simR(ans, v); if (r > best) { best = r; model = v; } });
+  const c = cmpS(ans), keysOk = p.keys.length > 0 && p.keys.every(k => c.includes(cmpS(k)));
+  const status = !c ? "miss" : best >= 0.9 ? "ok" : (best >= 0.72 || (keysOk && best >= 0.45)) ? "close" : "miss";
+  const have = new Set(normW(ans).split(" "));
+  const diff = model.split(/(\s+)/).map(w => { if (/^\s+$/.test(w)) return w; const n = normW(w); return !n || have.has(n) ? glossF(w) : `<mark>${esc(w)}</mark>`; }).join("");
+  return { status, model, diff, exact: cmpS(ans) === cmpS(model) };
+}
+
+/* =================== ALL QUESTIONS =================== */
+const TYPE_NAME = { mcq: "Choose", match: "Match", blank: "Fill the gap", build: "Build the sentence", tap: "Tap the words", level: "Pyramid floor", order: "Put in order", write: "Write" };
+function qSummary(q) {
+  if (q.type === "words") return `<div class="aq info"><b>New words</b><ul class="awords">${q.words.map(w => `<li><b>${esc(w[0])}</b> = ${esc(w[1])}</li>`).join("")}</ul></div>`;
+  if (q.type === "info") return `<div class="aq info"><b>${esc(q.title)}</b></div>`;
+  if (q.type === "idea") return `<div class="aq info"><b>Idea:</b> ${esc(LOGIC[q.u].idea)}</div>`;
+  if (q.type === "bridge") { const b = BRIDGES[q.b]; return `<div class="aq info"><b>Bridge:</b> ${esc(b.enw)} = ${esc(b.w)}</div>`; }
+  if (q.type === "chain") return `<div class="aq info"><b>The whole chain</b></div>`;
+  let ask = "", ans = "";
+  if (q.type === "mcq") { ask = `${esc(q.prompt)}${q.big ? ` <b>${gloss(q.big)}</b>` : ""}`; ans = gloss(q.answer); }
+  if (q.type === "match") { ask = "Match the pairs"; ans = q.pairs.map(p => `${glossF(p[0])} = ${esc(p[1])}`).join(" · "); }
+  if (q.type === "blank") { ask = `${glossF(q.before)}<span class="agap">___</span>${glossF(q.after)} <span class="small">(${esc(q.en)})</span>`; ans = glossF(q.answer); }
+  if (q.type === "build") { ask = `"${esc(q.en)}"`; ans = glossF(q.answer.join(" ")); }
+  if (q.type === "tap") { ask = `${esc(q.prompt)} ${glossF(q.tokens.join(" "))}`; ans = q.answer.map(k => glossF(q.tokens[k])).join(" + ") + (q.en ? ` <span class="small">(${esc(q.en)})</span>` : ""); }
+  if (q.type === "level") { ask = gloss(q.phrase); ans = `Floor ${LV[q.answer].n}: ${LV[q.answer].en}`; }
+  if (q.type === "order") { ask = esc(q.prompt); ans = `<ol>${q.items.map(x => `<li>${gloss(x[0])}${x[1] ? ` <span class="small">(${esc(x[1])})</span>` : ""}</li>`).join("")}</ol>`; }
+  if (q.type === "write") { ask = q.en ? `"${esc(q.en)}"` : glossF(q.fr); ans = q.parts.length > 1 ? `<ol>${q.parts.map(p => `<li>${glossF(p.variants[0])}</li>`).join("")}</ol>` : glossF(q.parts[0].variants[0]); }
+  return `<div class="aq"><span class="atype">${TYPE_NAME[q.type] || q.type}</span><div class="aask">${ask}</div><div class="aans">→ ${ans}</div></div>`;
+}
+function renderAll() {
+  $("#stage").innerHTML = `<h2 class="msec">All questions</h2>
+    <p class="small">Every lesson and its questions, with the answers. Some lessons pick a few questions at random, so the order or the words can change each time. You can start any lesson from here.</p>
+    ${COURSES.map((c, i) => `${i === 0 ? `<h3 class="atrack">Main track · Functions</h3>` : c.track === "bonus" && COURSES[i - 1].track !== "bonus" ? `<h3 class="atrack b">Bonus · Geometry and proofs (only if there is time)</h3>` : ""}<div class="acourse"><h3 style="color:${c.color}">${esc(c.title)} · <span class="vfr">${esc(c.fr)}</span></h3>
+      ${c.units.map(u => `<div class="aunit"><div class="small"><b>${esc(u.title)}</b> · ${esc(u.fr)}</div>
+        ${u.lessons.map(l => `<details class="alesson" data-key="${l.key}"><summary><span>${esc(l.t)}</span>${P.done[l.key] ? `<span class="tagEN">done</span>` : ""}<button class="btn astart" data-key="${l.key}">Start</button></summary><div class="alist"></div></details>`).join("")}</div>`).join("")}</div>`).join("")}`;
+  const L = COURSES.flatMap(allLessons);
+  $("#stage").querySelectorAll(".alesson").forEach(d => d.addEventListener("toggle", () => {
+    if (!d.open || d.dataset.filled) return; d.dataset.filled = 1;
+    const l = L.find(x => x.key === d.dataset.key);
+    d.querySelector(".alist").innerHTML = l.gen().map(qSummary).join("");
+  }));
+  $("#stage").querySelectorAll(".astart").forEach(b => b.onclick = ev => { ev.preventDefault(); startLesson(L.find(x => x.key === b.dataset.key)); });
+}
+
+/* =================== DECODER =================== */
+const DKEYS = DICT.map(([fr, en]) => ({ w: (fr.match(WORD_RE) || []).filter(isWord).map(nrm), fr, en, small: fr.length <= 3 && !/[a-z]{4}/.test(fr) })).sort((a, b) => b.w.length - a.w.length);
+function decode(text) {
+  const toks = text.match(WORD_RE) || [], wi = toks.map((t, i) => isWord(t) ? i : -1).filter(i => i >= 0);
+  const out = []; let ti = 0, k = 0, found = 0;
+  while (k < wi.length) {
+    let hit = null;
+    for (const d of DKEYS) { if (d.w.length > wi.length - k) continue; if (d.w.every((w, j) => nrm(toks[wi[k + j]]) === w)) { hit = d; break; } }
+    if (!hit) { k++; continue; }
+    const s = wi[k]; let e = wi[k + hit.w.length - 1];
+    if (hit.fr.endsWith(")") && toks[e + 1] === ")") e++;
+    out.push(`<span class="dp">${esc(toks.slice(ti, s).join(""))}</span>`);
+    const frag = toks.slice(s, e + 1).join("");
+    out.push(`<span class="dg${hit.small ? " sm" : ""}" data-say="${esc(frag)}" data-lang="fr-FR" role="button" tabindex="0"><span class="dfr">${esc(frag)}</span><span class="den">${esc(hit.en)}</span></span>`);
+    if (!hit.small) found++;
+    ti = e + 1; k += hit.w.length;
+  }
+  out.push(`<span class="dp">${esc(toks.slice(ti).join(""))}</span>`);
+  return { html: out.join(""), found };
+}
+function renderDecoder() {
+  const last = store.get("decoderText", PRESETS[0]);
+  $("#stage").innerHTML = `<h2 class="msec">Instruction decoder</h2>
+    <p class="small">Type or paste a question from a French test. Every word the app knows gets its English meaning underneath. Tap a word to hear it.</p>
+    <textarea id="dtext" class="dtext" spellcheck="false" aria-label="French instruction">${esc(last)}</textarea>
+    <div class="dpres">${PRESETS.map((p, i) => `<button class="vtile small" data-p="${i}">${esc(p.length > 46 ? p.slice(0, 44) + "…" : p)}</button>`).join("")}</div>
+    <div class="dout" id="dout"></div>
+    <div class="vcard small">Grey words are small linking words (the, of, and…). Coloured words carry the meaning: <b>start with the action verb</b>, then what it is about, then how precise the answer must be.</div>`;
+  const run = () => { const v = $("#dtext").value; store.set("decoderText", v); const r = decode(v); $("#dout").innerHTML = r.html || `<span class="small">Type something above.</span>`; wireSay($("#dout")); $("#dout").querySelectorAll(".dg").forEach(el => el.onkeydown = ev => { if (ev.key === "Enter") el.click(); }); };
+  $("#dtext").addEventListener("input", run);
+  $("#stage").querySelectorAll("[data-p]").forEach(b => b.onclick = () => { $("#dtext").value = PRESETS[+b.dataset.p]; run(); });
+  run();
+}
+
+/* =================== GLOSSARY =================== */
+function renderGlossary() {
+  const groups = [];
+  COURSES.forEach(c => c.units.forEach(u => {
+    const ws = []; u.lessons.forEach(l => { try { l.gen().forEach(q => { if (q.type === "words") ws.push(...q.words); }); } catch (e) {} });
+    const uniq = []; ws.forEach(w => { if (!uniq.some(x => x[0] === w[0])) uniq.push(w); });
+    if (uniq.length) groups.push({ c, u, ws: uniq, learned: u.lessons.some(l => P.done[l.key]) });
+  }));
+  BRIDGES.forEach(() => {});
+  groups.splice(groups.findIndex(g => g.c.id === "reason"), 0, { c: COURSE_C, u: { title: "Bridge words", fr: "Les mots-ponts" }, ws: BRIDGES.map(b => [b.w, b.enw]), learned: true });
+  $("#stage").innerHTML = `<h2 class="msec">Glossary</h2><input id="gq" class="gsearch" type="search" placeholder="Search in French or English…" aria-label="Search">
+    <div id="glist"></div>`;
+  const draw = () => {
+    const q = nrm($("#gq").value.trim());
+    $("#glist").innerHTML = groups.map(g => {
+      const ws = g.ws.filter(w => !q || nrm(w[0]).includes(q) || nrm(w[1]).includes(q));
+      if (!ws.length) return "";
+      return `<div class="gsec"><h3 style="color:${g.u.color || g.c.color}">${esc(g.u.title)} · <span class="vfr">${esc(g.u.fr)}</span> ${g.learned ? `<span class="tagEN">studied</span>` : ""}</h3>
+        <div class="gtable">${ws.map(w => `<div class="grow">${sayBtn(w[0])}<b>${esc(w[0])}</b><span>${esc(w[1])}</span></div>`).join("")}</div></div>`;
+    }).join("") || `<p class="small">No word found.</p>`;
+    wireSay($("#glist"));
+  };
+  $("#gq").addEventListener("input", draw); draw();
+}
+
+go({ name: "home" });
+})();
+</script>
+
+</body></html>
